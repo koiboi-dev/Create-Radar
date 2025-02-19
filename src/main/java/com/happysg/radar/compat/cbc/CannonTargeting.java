@@ -1,5 +1,6 @@
 package com.happysg.radar.compat.cbc;
 
+import com.happysg.radar.compat.vs2.VS2Utils;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
@@ -78,12 +79,12 @@ public class CannonTargeting {
         }
         float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
 
-        Vec3 mountPos = mount.getBlockPos().above(2).getCenter();
+        Vec3 mountPos = VS2Utils.getWorldVec(level,mount.getBlockPos().above(2).getCenter());
         int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
 
         double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
         double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
 
-        return calculatePitch(chargePower, targetPos, mountPos, barrelLength, drag, gravity);
+        return calculatePitch(chargePower, VS2Utils.getWorldVec(level,targetPos), mountPos, barrelLength, drag, gravity);
     }
 }
