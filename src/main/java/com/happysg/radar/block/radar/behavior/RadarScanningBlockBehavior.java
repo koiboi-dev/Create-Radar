@@ -7,6 +7,8 @@ import com.happysg.radar.block.radar.track.RadarTrackUtil;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.vs2.VS2Utils;
 import com.happysg.radar.config.RadarConfig;
+import com.simibubi.create.content.contraptions.bearing.BearingBlock;
+import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -37,6 +39,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     private double range;
     private double angle;
     private boolean running = false;
+    private SmartBlockEntity bearingEntity;
     Vec3 scanPos = Vec3.ZERO;
 
 
@@ -47,6 +50,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
 
     public RadarScanningBlockBehavior(SmartBlockEntity be) {
         super(be);
+        bearingEntity = be;
         setLazyTickRate(5);
     }
 
@@ -63,6 +67,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     }
 
     private void updateRadarTracks() {
+        scanPos = VS2Utils.getWorldPos(bearingEntity).getCenter();
         Level level = blockEntity.getLevel();
         if (level == null) return;
         for (Entity entity : scannedEntities) {
