@@ -2,6 +2,7 @@ package com.happysg.radar.compat.vs2;
 
 import com.happysg.radar.compat.Mods;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
@@ -27,6 +28,18 @@ public class VS2Utils {
             return newPos;
         }
         return pos;
+    }
+
+    public static Vec3 getShipVec(Vec3 vec3, Ship ship){
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return vec3;
+        if (ship != null) {
+            ship.getShipToWorld();
+            final Vector3d vec = ship.getWorldToShip().transformPosition(new Vector3d(vec3.x, vec3.y, vec3.z));
+            VectorConversionsMCKt.toMinecraft(vec);
+            return new Vec3(vec.x(), vec.y(), vec.z());
+        }
+        return vec3;
     }
 
     public static BlockPos getWorldPos(BlockEntity blockEntity) {
@@ -60,6 +73,18 @@ public class VS2Utils {
             return new Vec3(vec.x(), vec.y(), vec.z());
         }
         return new Vec3(pos.getX(), pos.getY(), pos.getZ());
+    }
+    public static Vec3 getWorldVec(Level level, Vec3 vec3){
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return vec3;
+        Vec3i vec3i = new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z);
+        if (VSGameUtilsKt.getShipObjectManagingPos(level, vec3i) != null) {
+            final LoadedShip loadedShip = VSGameUtilsKt.getShipObjectManagingPos(level, vec3i);
+            final Vector3d vec = loadedShip.getShipToWorld().transformPosition(new Vector3d(vec3.x, vec3.y, vec3.z));
+            VectorConversionsMCKt.toMinecraft(vec);
+            return new Vec3(vec.x(), vec.y(), vec.z());
+        }
+        return vec3;
     }
 
     public static Vec3 getWorldVec(BlockEntity blockEntity) {

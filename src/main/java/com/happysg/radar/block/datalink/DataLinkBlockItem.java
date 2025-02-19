@@ -87,7 +87,7 @@ public class DataLinkBlockItem extends BlockItem {
         BlockPos selectedPos = NbtUtils.readBlockPos(tag.getCompound("SelectedPos"));
         BlockPos placedPos = pos.relative(pContext.getClickedFace(), state.canBeReplaced() ? 0 : 1);
 
-        if (!selectedPos.closerThan(VS2Utils.getWorldPos(level, placedPos), RadarConfig.server().radarLinkRange.get())) {
+        if (!VS2Utils.getWorldPos(level, selectedPos).closerThan(VS2Utils.getWorldPos(level, placedPos), RadarConfig.server().radarLinkRange.get())) {
             player.displayClientMessage(Lang.translateDirect("display_link.too_far")
                     .withStyle(ChatFormatting.RED), true);
             return InteractionResult.FAIL;
