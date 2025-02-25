@@ -7,8 +7,6 @@ import com.happysg.radar.block.radar.track.RadarTrackUtil;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.vs2.VS2Utils;
 import com.happysg.radar.config.RadarConfig;
-import com.simibubi.create.content.contraptions.bearing.BearingBlock;
-import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -119,6 +117,18 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         }
         for (String id : toRemove) {
             radarTracks.remove(id);
+        }
+
+        List<Projectile> toRemoveProjectiles = new ArrayList<>();
+        for (Projectile projectile : scannedProjectiles) {
+            if (!projectile.isAlive()) {
+                toRemoveProjectiles.add(projectile);
+            }
+        }
+
+        for (Projectile projectile : toRemoveProjectiles) {
+            radarTracks.remove(projectile.getUUID().toString());
+            scannedProjectiles.remove(projectile);
         }
     }
 
