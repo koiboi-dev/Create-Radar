@@ -133,6 +133,5 @@ public class AutoTargetScreen extends AbstractDataLinkScreen {
         super.onClose(tag);
         TargetingConfig targetingConfig = new TargetingConfig(player, contraption, mob, animal, projectile, autoTarget, autoFire);
         tag.put("targeting", targetingConfig.toTag());
-        System.out.println("onClose: " + targetingConfig.toTag());
     }
 }
