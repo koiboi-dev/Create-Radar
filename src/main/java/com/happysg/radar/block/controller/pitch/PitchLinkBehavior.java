@@ -26,7 +26,7 @@ public class PitchLinkBehavior extends DataPeripheral {
         if (!(context.getSourceBlockEntity() instanceof AutoPitchControllerBlockEntity controller))
             return;
 
-        if (context.getMonitorBlockEntity() == null)
+        if (context.getMonitorBlockEntity() == null || context.level().isClientSide())
             return;
 
         MonitorBlockEntity monitor = context.getMonitorBlockEntity();

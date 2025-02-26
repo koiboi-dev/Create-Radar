@@ -51,7 +51,6 @@ public class AbstractDataLinkScreen extends AbstractSimiScreen {
         int x = guiLeft;
         int y = guiTop;
 
-
         initGathererOptions();
 
         confirmButton = new IconButton(x + background.width - 33, y + background.height - 24, AllIcons.I_CONFIRM);
@@ -65,14 +64,11 @@ public class AbstractDataLinkScreen extends AbstractSimiScreen {
         sourceState = level.getBlockState(blockEntity.getSourcePosition());
         targetState = level.getBlockState(blockEntity.getTargetPosition());
 
-        ItemStack asItem;
         int x = guiLeft;
         int y = guiTop;
 
-
         source = AllDataBehaviors.sourcesOf(level, blockEntity.getSourcePosition());
         target = AllDataBehaviors.targetOf(level, blockEntity.getTargetPosition());
-
     }
 
 
@@ -118,7 +114,4 @@ public class AbstractDataLinkScreen extends AbstractSimiScreen {
 
     public void onClose(CompoundTag tag) {
     }
-
-    ;
-
 }
