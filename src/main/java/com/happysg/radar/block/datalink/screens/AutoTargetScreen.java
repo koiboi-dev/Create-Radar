@@ -38,7 +38,7 @@ public class AutoTargetScreen extends AbstractDataLinkScreen {
         this.background = ModGuiTextures.CANNON_TARGETING;
         TargetingConfig targetingConfig = TargetingConfig.DEFAULT;
         if (be.getSourceConfig().contains("targeting")) {
-            targetingConfig = TargetingConfig.fromTag(be.getSourceConfig().getCompound("targeting"));
+            targetingConfig = TargetingConfig.fromTag(be.getSourceConfig());
         }
         player = targetingConfig.player();
         contraption = targetingConfig.contraption();
@@ -133,5 +133,6 @@ public class AutoTargetScreen extends AbstractDataLinkScreen {
         super.onClose(tag);
         TargetingConfig targetingConfig = new TargetingConfig(player, contraption, mob, animal, projectile, autoTarget, autoFire);
         tag.put("targeting", targetingConfig.toTag());
+        System.out.println("onClose: " + targetingConfig.toTag());
     }
 }
