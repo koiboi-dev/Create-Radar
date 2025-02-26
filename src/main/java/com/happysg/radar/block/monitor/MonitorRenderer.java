@@ -1,6 +1,6 @@
 package com.happysg.radar.block.monitor;
 
-import com.happysg.radar.block.radar.bearing.RadarBearingBlockEntity;
+import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.compat.vs2.VS2Utils;
 import com.happysg.radar.config.RadarConfig;
@@ -55,7 +55,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
         });
     }
 
-    private void renderSafeZones(RadarBearingBlockEntity radar, MonitorBlockEntity blockEntity, PoseStack ms, MultiBufferSource bufferSource) {
+    private void renderSafeZones(IRadar radar, MonitorBlockEntity blockEntity, PoseStack ms, MultiBufferSource bufferSource) {
         int size = blockEntity.getSize();
         float range = radar.getRange();
 
@@ -71,7 +71,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
 
     }
 
-    private void renderGrid(RadarBearingBlockEntity radar, MonitorBlockEntity blockEntity, PoseStack ms, MultiBufferSource bufferSource) {
+    private void renderGrid(IRadar radar, MonitorBlockEntity blockEntity, PoseStack ms, MultiBufferSource bufferSource) {
         int size = blockEntity.getSize();
         float range = radar.getRange();
         float gridSpacing = range * 2 / RadarConfig.client().gridBoxScale.get();
@@ -125,14 +125,14 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
     }
 
 
-    private void renderRadarTracks(RadarBearingBlockEntity radar, MonitorBlockEntity monitor, PoseStack ms, MultiBufferSource bufferSource) {
+    private void renderRadarTracks(IRadar radar, MonitorBlockEntity monitor, PoseStack ms, MultiBufferSource bufferSource) {
         AtomicInteger depthCounter = new AtomicInteger(0);
         for (RadarTrack track : monitor.getTracks()) {
             renderTrack(track, monitor, radar, ms, bufferSource, depthCounter.getAndIncrement());
         }
     }
 
-    private void renderTrack(RadarTrack track, MonitorBlockEntity monitor, RadarBearingBlockEntity radar, PoseStack ms, MultiBufferSource bufferSource, int depthMultiplier) {
+    private void renderTrack(RadarTrack track, MonitorBlockEntity monitor, IRadar radar, PoseStack ms, MultiBufferSource bufferSource, int depthMultiplier) {
         VertexConsumer buffer = getBuffer(bufferSource, track.getSprite());
         Matrix4f m = ms.last().pose();
         Matrix3f n = ms.last().normal();
@@ -143,7 +143,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
         float size = monitor.getSize();
         float scale = radar.getRange();
         Direction monitorFacing = monitor.getBlockState().getValue(MonitorBlock.FACING);
-        Vec3 relativePos = track.position().subtract(VS2Utils.getWorldPos(radar).getCenter());
+        Vec3 relativePos = track.position().subtract(VS2Utils.getWorldPos(monitor.getLevel(), radar.getBlockPos()).getCenter());
         float xOff = monitorFacing.getAxis() == Direction.Axis.Z ? getOffset(relativePos.x(), scale) : getOffset(relativePos.z(), scale);
         float zOff = monitorFacing.getAxis() == Direction.Axis.Z ? getOffset(relativePos.z(), scale) : getOffset(relativePos.x(), scale);
 
@@ -243,7 +243,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
 
     }
 
-    public void renderSweep(RadarBearingBlockEntity radar, MonitorBlockEntity controller, PoseStack ms, MultiBufferSource bufferSource) {
+    public void renderSweep(IRadar radar, MonitorBlockEntity controller, PoseStack ms, MultiBufferSource bufferSource) {
         if (!radar.isRunning())
             return;
 
@@ -253,10 +253,8 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
         Color color = new Color(RadarConfig.client().groundRadarColor.get());
         float alpha = 0.8f;
         Direction monitorFacing = controller.getBlockState().getValue(MonitorBlock.FACING);
-        Direction radarFacing = radar.getReceiverFacing();
-        float angleDiff = monitorFacing.toYRot() - radarFacing.toYRot();
-        float angle = ((radar.getAngle() + angleDiff) % 360.0f) * (float) Math.PI / 180.0f;
-        // System.out.println(angle);
+        float angleDiff = monitorFacing.toYRot();
+        float angle = ((radar.getGlobalAngle() + angleDiff) % 360.0f) * (float) Math.PI / 180.0f;
         float cos = (float) Math.cos(angle);
         float sin = (float) Math.sin(angle);
 

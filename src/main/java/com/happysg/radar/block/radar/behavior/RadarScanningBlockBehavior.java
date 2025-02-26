@@ -265,4 +265,8 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     public BehaviourType<?> getType() {
         return TYPE;
     }
+
+    public float getAngle() {
+        return (float) angle;
+    }
 }

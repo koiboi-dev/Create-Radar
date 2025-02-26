@@ -42,6 +42,18 @@ public class VS2Utils {
         return vec3;
     }
 
+    public static Vec3 getWorldVecDirectionTransform(Vec3 vec3, Ship ship) {
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return vec3;
+        if (ship != null) {
+            ship.getShipToWorld();
+            final Vector3d vec = ship.getShipToWorld().transformDirection(new Vector3d(vec3.x, vec3.y, vec3.z));
+            VectorConversionsMCKt.toMinecraft(vec);
+            return new Vec3(vec.x(), vec.y(), vec.z());
+        }
+        return vec3;
+    }
+
     public static BlockPos getWorldPos(BlockEntity blockEntity) {
         return getWorldPos(blockEntity.getLevel(), blockEntity.getBlockPos());
     }

@@ -1,7 +1,7 @@
 package com.happysg.radar.block.radar.bearing;
 
 import com.happysg.radar.CreateRadar;
-import com.happysg.radar.block.radar.behavior.IHasTracks;
+import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.behavior.RadarScanningBlockBehavior;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.compat.vs2.VS2Utils;
@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class RadarBearingBlockEntity extends MechanicalBearingBlockEntity implements IHasTracks {
+public class RadarBearingBlockEntity extends MechanicalBearingBlockEntity implements IRadar {
     private int dishCount;
     private boolean creative;
     private Direction receiverFacing = Direction.NORTH;

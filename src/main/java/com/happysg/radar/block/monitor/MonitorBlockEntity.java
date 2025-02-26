@@ -1,8 +1,7 @@
 package com.happysg.radar.block.monitor;
 
 import com.happysg.radar.block.datalink.screens.TargetingConfig;
-import com.happysg.radar.block.radar.bearing.RadarBearingBlockEntity;
-import com.happysg.radar.block.radar.behavior.IHasTracks;
+import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.block.radar.track.RadarTrackUtil;
 import com.happysg.radar.compat.vs2.VS2Utils;
@@ -32,13 +31,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoveringInformation, IHasTracks {
+public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoveringInformation {
 
     protected BlockPos controller;
     protected int radius = 1;
     private int ticksSinceLastUpdate = 0;
     protected BlockPos radarPos;
-    RadarBearingBlockEntity radar;
+    IRadar radar;
     protected String hoveredEntity;
     protected String selectedEntity;
 
@@ -196,18 +195,16 @@ public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoverin
 
 
     //messy caching radar reference
-    public Optional<RadarBearingBlockEntity> getRadar() {
+    public Optional<IRadar> getRadar() {
         if (radar != null)
             return Optional.of(radar);
         if (radarPos == null)
             return Optional.empty();
-        if (level.getBlockEntity(radarPos) instanceof RadarBearingBlockEntity radar) {
+        if (level.getBlockEntity(radarPos) instanceof IRadar radar) {
             this.radar = radar;
         }
         return Optional.ofNullable(radar);
     }
-
-
 
 
     public MonitorBlockEntity getController() {
@@ -280,7 +277,7 @@ public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoverin
     }
 
     public float getRange() {
-        return getRadar().map(RadarBearingBlockEntity::getRange).orElse(0f);
+        return getRadar().map(IRadar::getRange).orElse(0f);
     }
 
     public boolean isInSafeZone(Vec3 pos) {
