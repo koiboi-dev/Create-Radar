@@ -54,6 +54,10 @@ public class VS2Utils {
         return vec3;
     }
 
+    public static Vec3 getWorldVecDirectionTransform(Vec3 vec3, BlockEntity be) {
+        return getWorldVecDirectionTransform(vec3, getShipManagingPos(be));
+    }
+
     public static BlockPos getWorldPos(BlockEntity blockEntity) {
         return getWorldPos(blockEntity.getLevel(), blockEntity.getBlockPos());
     }

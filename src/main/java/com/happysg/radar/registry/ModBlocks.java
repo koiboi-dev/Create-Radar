@@ -99,7 +99,7 @@ public class ModBlocks {
                     .properties(BlockBehaviour.Properties::noOcclusion)
                     .transform(axeOrPickaxe())
                     .blockstate((ctx, prov) -> prov.directionalBlock(ctx.getEntry(), prov.models()
-                            .getExistingFile(ctx.getId()), 0))
+                            .getExistingFile(ctx.getId()), 180))
                     .simpleItem()
                     .register();
 

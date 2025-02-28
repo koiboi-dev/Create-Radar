@@ -20,6 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +52,10 @@ public class RadarBearingBlockEntity extends MechanicalBearingBlockEntity implem
     }
 
     public float getGlobalAngle() {
-        return (receiverFacing.toYRot() - angle + 360) % 360;
+        //for vs2 compat in future
+        Vec3 receiverVector = new Vec3(receiverFacing.getStepX(), receiverFacing.getStepY(), receiverFacing.getStepZ());
+        float receiverAngle = (float) Math.toDegrees(Math.atan2(receiverVector.x, receiverVector.z));
+        return (receiverAngle + angle + 360) % 360;
     }
 
     public float getAngularSpeed() {

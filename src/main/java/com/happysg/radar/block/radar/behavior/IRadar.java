@@ -15,4 +15,10 @@ public interface IRadar {
     BlockPos getBlockPos();
 
     float getGlobalAngle();
+
+    //todo better name and/or plan to handle different types of radars
+    default boolean renderRelativeToMonitor() {
+        return true;
+    }
+
 }

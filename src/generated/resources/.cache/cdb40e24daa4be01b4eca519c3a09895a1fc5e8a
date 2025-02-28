@@ -1,4 +1,4 @@
-// 1.20.1	2025-02-14T11:19:06.5693229	Registrate Provider for create_radar [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
+// 1.20.1	2025-02-27T14:53:01.4537572	Registrate Provider for create_radar [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
 204a35578d423a97e017194a77b9e37e955478f7 assets/create_radar/blockstates/auto_pitch_controller.json
 1379e78ca45372404579f52e6d9f7f6e5dd61b7a assets/create_radar/blockstates/auto_yaw_controller.json
 b7267535a7b026db84482242816af286e6dc31db assets/create_radar/blockstates/creative_radar_plate.json
@@ -9,7 +9,7 @@ c2320499ea0b3f1d0fd01b6308329e390ff0cf09 assets/create_radar/blockstates/plane_r
 66a2079dcc1b1f5dfc01f4065580ec20f647847a assets/create_radar/blockstates/radar_bearing.json
 743a6e261a444a2ff6ed4092ad78358c08c93dcf assets/create_radar/blockstates/radar_dish_block.json
 802436ac5c28235b21c7c7053c4adf4854114bc0 assets/create_radar/blockstates/radar_plate_block.json
-6ebe881b05211829ceda7bf291b6493c915174ac assets/create_radar/blockstates/radar_receiver_block.json
+d9cfbbf69d5957d96dd4f84cbfa5c31ccdc713b0 assets/create_radar/blockstates/radar_receiver_block.json
 cbafb2223d9de7cd7ade3f9093c203d3bfc41038 assets/create_radar/blockstates/track_controller.json
 dbad679d3614a27ae8264ce0b041b9332c38a3cf assets/create_radar/lang/en_ud.json
 22e2eb3ab7357ee1e96f0ad9f6ff30a639527968 assets/create_radar/lang/en_us.json

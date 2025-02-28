@@ -89,15 +89,24 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     }
 
     private boolean isInFovAndRange(Vec3 target) {
-        double angleToEntity = Math.toDegrees(Math.atan2(target.x() - scanPos.x(), scanPos.z() - target.z()));
-        if (angleToEntity < 0) {
-            angleToEntity += 360;
-        }
-        double relativeAngle = Math.abs(angleToEntity - angle);
         double distance = scanPos.distanceTo(target);
-        if (distance < 2)//update self position constantly
+        if (distance < 2) // update self position constantly
             return true;
-        return relativeAngle <= fov / 2.0 && distance <= range;
+        // Calculate angle to entity in degrees
+        // Note: atan2 should take (targetX - scanX, targetZ - scanZ) to get angle from scan to target
+        double angleToEntity = Math.toDegrees(Math.atan2(target.x() - scanPos.x(), target.z() - scanPos.z()));
+        angleToEntity = (angleToEntity + 360) % 360;
+
+        // Calculate the smallest angle between the two directions
+        double angleDiff = Math.abs(angleToEntity - angle);
+
+        // Handle wraparound
+        if (angleDiff > 180) {
+            angleDiff = 360 - angleDiff;
+        }
+
+
+        return angleDiff <= fov / 2.0 && distance <= range;
     }
 
     private void removeDeadTracks() {

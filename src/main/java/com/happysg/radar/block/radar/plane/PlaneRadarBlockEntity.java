@@ -49,13 +49,10 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
         Direction facing = getBlockState().getValue(PlaneRadarBlock.FACING);
         Vec3 facingVec = new Vec3(facing.getStepX(), facing.getStepY(), facing.getStepZ());
         Vec3 shipVec = VS2Utils.getWorldVecDirectionTransform(facingVec, ship);
-        System.out.println("facingVec: " + facingVec);
-        System.out.println("shipVec: " + shipVec);
-        // Calculate angle in the XZ plane (horizontal plane)
         double angle = Math.toDegrees(Math.atan2(shipVec.x, shipVec.z));
-        System.out.println("angle: " + angle);
-        scanningBehavior.setAngle((angle + 180) % 360);
+        scanningBehavior.setAngle((angle + 360) % 360);
     }
+
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -64,6 +61,7 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
         scanningBehavior.setRange(250);
         scanningBehavior.setAngle((getBlockState().getValue(PlaneRadarBlock.FACING).toYRot() + 360) % 360);
         scanningBehavior.setScanPos(VS2Utils.getWorldVec(this));
+        scanningBehavior.setTrackExpiration(1);
         behaviours.add(scanningBehavior);
     }
 
@@ -86,6 +84,11 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
 
     @Override
     public float getGlobalAngle() {
-        return scanningBehavior.getAngle();
+        return 0;
+    }
+
+    @Override
+    public boolean renderRelativeToMonitor() {
+        return false;
     }
 }
