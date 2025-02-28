@@ -152,7 +152,8 @@ dependencies {
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 
     //Clockwork
-    compileOnly fg.deobf("maven.modrinth:create-clockwork:${minecraft_version}-${clockwork_version}")
+    implementation fg.deobf("maven.modrinth:create-clockwork:${minecraft_version}-${clockwork_version}")
+    implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
 
     //Valkyrien Skies
     implementation("org.valkyrienskies.core:api:${vs_core_version}")
