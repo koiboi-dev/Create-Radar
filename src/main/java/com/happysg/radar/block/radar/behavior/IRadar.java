@@ -12,7 +12,7 @@ public interface IRadar {
 
     boolean isRunning();
 
-    BlockPos getBlockPos();
+    BlockPos getWorldPos();
 
     float getGlobalAngle();
 

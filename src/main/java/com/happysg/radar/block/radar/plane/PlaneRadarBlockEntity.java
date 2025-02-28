@@ -38,6 +38,11 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
     }
 
     @Override
+    public BlockPos getWorldPos() {
+        return getBlockPos();
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (!Mods.VALKYRIENSKIES.isLoaded())

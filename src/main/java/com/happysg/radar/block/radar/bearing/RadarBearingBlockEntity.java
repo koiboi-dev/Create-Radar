@@ -45,6 +45,11 @@ public class RadarBearingBlockEntity extends MechanicalBearingBlockEntity implem
     }
 
     @Override
+    public BlockPos getWorldPos() {
+        return getBlockPos();
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (running)

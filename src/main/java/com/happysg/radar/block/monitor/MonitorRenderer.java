@@ -235,7 +235,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
         int size = monitor.getSize();
 
         // Calculate track position relative to radar
-        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getBlockPos()).getCenter();
+        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
         Vec3 relativePos = track.position().subtract(radarPos);
         if (radar.renderRelativeToMonitor()) {
             //todo change for plane radar
@@ -341,7 +341,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
     private Vec3 transformWorldToRadar(double x, double y, double z, IRadar radar,
                                        MonitorBlockEntity monitor, Direction facing,
                                        float range, int size) {
-        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getBlockPos()).getCenter();
+        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
         Vec3 relativePos = new Vec3(x, y, z).subtract(radarPos);
 
         float xOff = calculateTrackOffset(relativePos, facing, range, true) * TRACK_POSITION_SCALE;
