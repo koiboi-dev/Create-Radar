@@ -4,7 +4,7 @@ import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.behavior.RadarScanningBlockBehavior;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.compat.Mods;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
@@ -12,7 +12,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,10 +29,7 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
         super.initialize();
         if (!Mods.VALKYRIENSKIES.isLoaded())
             return;
-        Ship ship = VS2Utils.getShipManagingPos(this);
-        if (ship == null)
-            return;
-        scanningBehavior.setScanPos(VS2Utils.getWorldVec(this));
+        scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
         scanningBehavior.setRunning(true);
     }
 
@@ -47,13 +43,9 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
         super.tick();
         if (!Mods.VALKYRIENSKIES.isLoaded())
             return;
-        Ship ship = VS2Utils.getShipManagingPos(this);
-        if (ship == null)
-            return;
-
         Direction facing = getBlockState().getValue(PlaneRadarBlock.FACING);
         Vec3 facingVec = new Vec3(facing.getStepX(), facing.getStepY(), facing.getStepZ());
-        Vec3 shipVec = VS2Utils.getWorldVecDirectionTransform(facingVec, ship);
+        Vec3 shipVec = PhysicsHandler.getWorldVecDirectionTransform(facingVec, this);
         double angle = Math.toDegrees(Math.atan2(shipVec.x, shipVec.z));
         scanningBehavior.setAngle((angle + 360) % 360);
     }
@@ -65,7 +57,7 @@ public class PlaneRadarBlockEntity extends SmartBlockEntity implements IRadar {
         scanningBehavior.setRunning(true);
         scanningBehavior.setRange(250);
         scanningBehavior.setAngle((getBlockState().getValue(PlaneRadarBlock.FACING).toYRot() + 360) % 360);
-        scanningBehavior.setScanPos(VS2Utils.getWorldVec(this));
+        scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
         scanningBehavior.setTrackExpiration(1);
         behaviours.add(scanningBehavior);
     }

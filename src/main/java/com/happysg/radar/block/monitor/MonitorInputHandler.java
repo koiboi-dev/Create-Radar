@@ -2,7 +2,7 @@ package com.happysg.radar.block.monitor;
 
 
 import com.happysg.radar.block.radar.track.RadarTrack;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -11,7 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 public class MonitorInputHandler {
 
@@ -68,7 +67,7 @@ public class MonitorInputHandler {
         Vec3 hit = player.pick(5, 0.0F, false).getLocation();
         if (player.pick(5, 0.0F, false) instanceof BlockHitResult result) {
             if (level.getBlockEntity(result.getBlockPos()) instanceof MonitorBlockEntity be && level.getBlockEntity(be.getControllerPos()) instanceof MonitorBlockEntity monitor) {
-                hit = VS2Utils.getShipVec(hit, VSGameUtilsKt.getShipObjectManagingPos(level,be.getBlockPos()));
+                hit = PhysicsHandler.getShipVec(hit, be);
                 RadarTrack track = findTrack(level, hit, monitor);
                 if (track != null) {
                     monitor.hoveredEntity = track.id();

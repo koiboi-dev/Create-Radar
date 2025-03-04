@@ -30,6 +30,12 @@ public class VS2Utils {
         return pos;
     }
 
+    public static Vec3 getShipVec(Vec3 vec3, BlockEntity be) {
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return vec3;
+        return getShipVec(vec3, getShipManagingPos(be));
+    }
+
     public static Vec3 getShipVec(Vec3 vec3, Ship ship){
         if (!Mods.VALKYRIENSKIES.isLoaded())
             return vec3;
@@ -55,6 +61,8 @@ public class VS2Utils {
     }
 
     public static Vec3 getWorldVecDirectionTransform(Vec3 vec3, BlockEntity be) {
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return vec3;
         return getWorldVecDirectionTransform(vec3, getShipManagingPos(be));
     }
 
@@ -104,7 +112,14 @@ public class VS2Utils {
     }
 
     public static Vec3 getWorldVec(BlockEntity blockEntity) {
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return blockEntity.getBlockPos().getCenter();
         return getWorldVec(blockEntity.getLevel(), blockEntity.getBlockPos());
     }
 
+    public static boolean isBlockInShipyard(Level level, BlockPos blockPos) {
+        if (!Mods.VALKYRIENSKIES.isLoaded())
+            return false;
+        return VSGameUtilsKt.isBlockInShipyard(level, blockPos);
+    }
 }

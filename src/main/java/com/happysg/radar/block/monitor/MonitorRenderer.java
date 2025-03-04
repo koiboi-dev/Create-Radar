@@ -2,7 +2,7 @@ package com.happysg.radar.block.monitor;
 
 import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.track.RadarTrack;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.happysg.radar.config.RadarConfig;
 import com.happysg.radar.registry.ModRenderTypes;
 import com.jozufozu.flywheel.util.Color;
@@ -235,7 +235,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
         int size = monitor.getSize();
 
         // Calculate track position relative to radar
-        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
+        Vec3 radarPos = PhysicsHandler.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
         Vec3 relativePos = track.position().subtract(radarPos);
         if (radar.renderRelativeToMonitor()) {
             //todo change for plane radar
@@ -341,7 +341,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
     private Vec3 transformWorldToRadar(double x, double y, double z, IRadar radar,
                                        MonitorBlockEntity monitor, Direction facing,
                                        float range, int size) {
-        Vec3 radarPos = VS2Utils.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
+        Vec3 radarPos = PhysicsHandler.getWorldPos(monitor.getLevel(), radar.getWorldPos()).getCenter();
         Vec3 relativePos = new Vec3(x, y, z).subtract(radarPos);
 
         float xOff = calculateTrackOffset(relativePos, facing, range, true) * TRACK_POSITION_SCALE;
@@ -441,7 +441,7 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
             // Calculate the current angle
             Direction monitorFacing = controller.getBlockState().getValue(MonitorBlock.FACING);
             Vec3 facingVec = new Vec3(monitorFacing.getStepX(), monitorFacing.getStepY(), monitorFacing.getStepZ());
-            Vec3 angleVec = VS2Utils.getWorldVecDirectionTransform(facingVec, controller);
+            Vec3 angleVec = PhysicsHandler.getWorldVecDirectionTransform(facingVec, controller);
             monitorAngle = (float) Math.toDegrees(Math.atan2(angleVec.x, angleVec.z));
             // Normalize to positive angles
             monitorAngle = (monitorAngle + 360) % 360;

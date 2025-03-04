@@ -3,6 +3,9 @@ package com.happysg.radar;
 import com.happysg.radar.block.controller.id.IDManager;
 import com.happysg.radar.block.datalink.DataLinkBlockItem;
 import com.happysg.radar.block.monitor.MonitorInputHandler;
+import com.happysg.radar.compat.Mods;
+import com.happysg.radar.compat.cbc.CBCCompatRegister;
+import com.happysg.radar.compat.cbcmw.CBCMWCompatRegister;
 import com.happysg.radar.config.RadarConfig;
 import com.happysg.radar.networking.ModMessages;
 import com.happysg.radar.registry.*;
@@ -56,6 +59,11 @@ public class CreateRadar {
         MinecraftForge.EVENT_BUS.addListener(MonitorInputHandler::monitorPlayerHovering);
         MinecraftForge.EVENT_BUS.addListener(CreateRadar::clientTick);
         MinecraftForge.EVENT_BUS.addListener(CreateRadar::onLoadWorld);
+        if (Mods.CREATEBIGCANNONS.isLoaded())
+            CBCCompatRegister.registerCBC();
+        if (Mods.CBCMODERNWARFARE.isLoaded())
+            CBCMWCompatRegister.registerCBCMW();
+
     }
 
     private static void clientTick(TickEvent.ClientTickEvent event) {

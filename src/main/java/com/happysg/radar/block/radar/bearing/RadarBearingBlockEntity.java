@@ -4,7 +4,7 @@ import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.behavior.RadarScanningBlockBehavior;
 import com.happysg.radar.block.radar.track.RadarTrack;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.happysg.radar.config.RadarConfig;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.contraptions.AssemblyException;
@@ -147,7 +147,7 @@ public class RadarBearingBlockEntity extends MechanicalBearingBlockEntity implem
         receiverFacing = getContraption().map(RadarContraption::getReceiverFacing).orElse(Direction.NORTH);
         creative = getContraption().map(RadarContraption::isCreative).orElse(false);
         scanningBehavior.setRange(getRange());
-        scanningBehavior.setScanPos(VS2Utils.getWorldVec(this));
+        scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
         scanningBehavior.setRunning(running);
         scanningBehavior.setAngle(getGlobalAngle());
         notifyUpdate();

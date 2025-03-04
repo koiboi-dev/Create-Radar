@@ -4,6 +4,7 @@ import com.happysg.radar.block.controller.firing.FiringControlBlockEntity;
 import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CannonTargeting;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -12,7 +13,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.contraption.AbstractMountedCannonContraption;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
@@ -145,7 +145,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
 
         if (level.getBlockEntity(getBlockPos().relative(getBlockState().getValue(AutoPitchControllerBlock.HORIZONTAL_FACING))) instanceof CannonMountBlockEntity mount) {
-            if(VSGameUtilsKt.isBlockInShipyard(level, this.getBlockPos())) {
+            if (PhysicsHandler.isBlockInShipyard(level, this.getBlockPos())) {
                 CannonTargeting.calculatePitchAndYawVS2(mount, targetPos, (ServerLevel) level);
             }
             else{

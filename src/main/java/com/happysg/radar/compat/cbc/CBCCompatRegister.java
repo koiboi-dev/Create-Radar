@@ -1,18 +1,15 @@
 package com.happysg.radar.compat.cbc;
 
 import com.happysg.radar.CreateRadar;
-import com.happysg.radar.compat.Mods;
 import com.happysg.radar.item.GuidedFuzeItem;
-import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 
-public class CBCItemsCompat {
-    public static ItemEntry<GuidedFuzeItem> GUIDED_FUZE;
+public class CBCCompatRegister {
+    public static ItemEntry<? extends Item> GUIDED_FUZE;
 
-    public static void registerCBC(CreateRegistrate registrate) {
-        if (!Mods.CREATEBIGCANNONS.isLoaded())
-            return;
+    public static void registerCBC() {
         CreateRadar.getLogger().info("Registering CBC Compat Items!");
         //conditionally register items, probably a bad idea
         GUIDED_FUZE = CreateRadar.REGISTRATE

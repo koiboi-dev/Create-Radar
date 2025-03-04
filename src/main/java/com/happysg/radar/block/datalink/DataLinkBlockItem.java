@@ -2,7 +2,7 @@ package com.happysg.radar.block.datalink;
 
 import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.monitor.MonitorBlockEntity;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.happysg.radar.config.RadarConfig;
 import com.happysg.radar.registry.AllDataBehaviors;
 import com.happysg.radar.registry.ModBlocks;
@@ -87,7 +87,7 @@ public class DataLinkBlockItem extends BlockItem {
         BlockPos selectedPos = NbtUtils.readBlockPos(tag.getCompound("SelectedPos"));
         BlockPos placedPos = pos.relative(pContext.getClickedFace(), state.canBeReplaced() ? 0 : 1);
 
-        if (!VS2Utils.getWorldPos(level, selectedPos).closerThan(VS2Utils.getWorldPos(level, placedPos), RadarConfig.server().radarLinkRange.get())) {
+        if (!PhysicsHandler.getWorldPos(level, selectedPos).closerThan(PhysicsHandler.getWorldPos(level, placedPos), RadarConfig.server().radarLinkRange.get())) {
             player.displayClientMessage(Lang.translateDirect("display_link.too_far")
                     .withStyle(ChatFormatting.RED), true);
             return InteractionResult.FAIL;

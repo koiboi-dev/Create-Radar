@@ -1,7 +1,7 @@
 package com.happysg.radar.block.controller.yaw;
 
 import com.happysg.radar.compat.Mods;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
 
@@ -113,7 +112,7 @@ public class AutoYawControllerBlockEntity extends GeneratingKineticBlockEntity {
     public void setTarget(Vec3 targetPos) {
         if (level.isClientSide())
             return;
-        if(VSGameUtilsKt.isBlockInShipyard(level, this.getBlockPos()))
+        if (PhysicsHandler.isBlockInShipyard(level, this.getBlockPos()))
             return;
         if (targetPos == null) {
             isRunning = false;

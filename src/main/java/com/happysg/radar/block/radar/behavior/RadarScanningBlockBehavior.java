@@ -5,6 +5,7 @@ import com.happysg.radar.block.radar.plane.PlaneRadarBlockEntity;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.block.radar.track.RadarTrackUtil;
 import com.happysg.radar.compat.Mods;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.happysg.radar.compat.vs2.VS2Utils;
 import com.happysg.radar.config.RadarConfig;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -65,7 +66,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     }
 
     private void updateRadarTracks() {
-        scanPos = VS2Utils.getWorldPos(bearingEntity).getCenter();
+        scanPos = PhysicsHandler.getWorldPos(bearingEntity).getCenter();
         Level level = blockEntity.getLevel();
         if (level == null) return;
         for (Entity entity : scannedEntities) {
@@ -145,7 +146,8 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     public void lazyTick() {
         if (running) {
             scanForEntityTracks();
-            scanForVSTracks();
+            if (Mods.VALKYRIENSKIES.isLoaded())
+                scanForVSTracks();
         }
         super.lazyTick();
     }
@@ -173,7 +175,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     }
 
     private AABB getRadarAABB() {
-        BlockPos radarPos = VS2Utils.getWorldPos(blockEntity);
+        BlockPos radarPos = PhysicsHandler.getWorldPos(blockEntity);
         double xOffset = range * Math.sin(Math.toRadians(angle));
         double zOffset = range * Math.cos(Math.toRadians(angle));
         return new AABB(radarPos.getX() - xOffset, radarPos.getY() - RadarConfig.server().radarYScanRange.get(), radarPos.getZ() - zOffset, radarPos.getX() + xOffset, radarPos.getY() + RadarConfig.server().radarYScanRange.get(), radarPos.getZ() + zOffset);

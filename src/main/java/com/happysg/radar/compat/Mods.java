@@ -18,8 +18,8 @@ public enum Mods {
     VS_CLOCKWORK,
     COMPUTERCRAFT,
     TRACKWORK,
+    CBCMODERNWARFARE,
     CREATEBIGCANNONS;
-
     private final String id;
 
     Mods() {

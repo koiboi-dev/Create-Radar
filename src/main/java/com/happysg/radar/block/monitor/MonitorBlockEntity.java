@@ -4,7 +4,7 @@ import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.block.radar.behavior.IRadar;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.block.radar.track.RadarTrackUtil;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.AllSpecialTextures;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;
@@ -273,7 +273,7 @@ public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoverin
     public Vec3 getRadarCenterPos() {
         if (radarPos == null)
             return null;
-        return VS2Utils.getWorldVec(level, radarPos);
+        return PhysicsHandler.getWorldVec(level, radarPos);
     }
 
     public float getRange() {
