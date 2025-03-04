@@ -443,6 +443,11 @@ public class MonitorRenderer extends SmartBlockEntityRenderer<MonitorBlockEntity
             Vec3 facingVec = new Vec3(monitorFacing.getStepX(), monitorFacing.getStepY(), monitorFacing.getStepZ());
             Vec3 angleVec = PhysicsHandler.getWorldVecDirectionTransform(facingVec, controller);
             monitorAngle = (float) Math.toDegrees(Math.atan2(angleVec.x, angleVec.z));
+
+            if (monitorFacing == Direction.NORTH || monitorFacing == Direction.SOUTH) {
+                monitorAngle = (monitorAngle + 180) % 360; //fixme not sure why this is needed, but off by 180
+            }
+
             // Normalize to positive angles
             monitorAngle = (monitorAngle + 360) % 360;
         }
