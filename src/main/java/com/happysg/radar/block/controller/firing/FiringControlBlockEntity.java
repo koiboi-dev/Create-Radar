@@ -24,7 +24,7 @@ public class FiringControlBlockEntity {
     TargetingConfig targetingConfig = TargetingConfig.DEFAULT;
     Vec3 target;
     boolean firing;
-    CannonMountBlockEntity cannonMount;
+    public CannonMountBlockEntity cannonMount;
     AutoPitchControllerBlockEntity pitchController;
     Level level;
     public List<AABB> safeZones = new ArrayList<>();

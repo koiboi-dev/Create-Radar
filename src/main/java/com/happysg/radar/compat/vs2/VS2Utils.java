@@ -106,5 +106,11 @@ public class VS2Utils {
     public static Vec3 getWorldVec(BlockEntity blockEntity) {
         return getWorldVec(blockEntity.getLevel(), blockEntity.getBlockPos());
     }
+    public static Vec3 getVec3FromVector(Vector3d vector) {
+        return new Vec3(vector.x, vector.y, vector.z);
+    }
+    public static Vector3d  getVector3dFromVec3(Vec3 vec) {
+        return new Vector3d(vec.x, vec.y, vec.z);
+    }
 
 }
