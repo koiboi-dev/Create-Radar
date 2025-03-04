@@ -5,7 +5,6 @@ import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CannonTargeting;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
-import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

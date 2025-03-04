@@ -1,18 +1,12 @@
 package com.happysg.radar.compat.cbc;
 
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.analysis.solvers.*;
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.joml.Quaterniond;
-import org.joml.Vector3d;
-import org.joml.Vector3dc;
-import org.valkyrienskies.core.api.ships.LoadedShip;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
+import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.contraption.AbstractMountedCannonContraption;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
@@ -21,7 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Double.NaN;
-import static java.lang.Math.*;
+import static java.lang.Math.log;
+import static java.lang.Math.toRadians;
 
 public class CannonTargeting {
     public static double calculateProjectileYatX(double speed, double dX, double thetaRad,double drag, double g ) {
@@ -87,13 +82,13 @@ public class CannonTargeting {
         }
         float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
 
-        Vec3 mountPos = VS2Utils.getWorldVec(level,mount.getBlockPos().above(2).getCenter());
+        Vec3 mountPos = PhysicsHandler.getWorldVec(level, mount.getBlockPos().above(2).getCenter());
         int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
 
         double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
         double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
 
-        return calculatePitch(chargePower, VS2Utils.getWorldVec(level,targetPos), mountPos, barrelLength, drag, gravity);
+        return calculatePitch(chargePower, PhysicsHandler.getWorldVec(level, targetPos), mountPos, barrelLength, drag, gravity);
     }
 
     public static List<List<Double>> calculatePitchAndYawVS2(CannonMountBlockEntity mount, Vec3 targetPos, ServerLevel level) {
@@ -114,50 +109,7 @@ public class CannonTargeting {
         double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
         double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
 
-        return calculatePitchAndYawVS2(level, chargePower, targetPos, mountPos, barrelLength, initialDirection, drag, gravity);
+        return VS2CannonTargeting.calculatePitchAndYawVS2(level, chargePower, targetPos, mountPos, barrelLength, initialDirection, drag, gravity);
     }
 
-
-    public static List<List<Double>> calculatePitchAndYawVS2(Level level, double speed, Vec3 targetPos, Vec3 mountPos, int barrelLength, Direction initialDirection, double drag, double gravity){
-        LoadedShip ship = VSGameUtilsKt.getShipObjectManagingPos(level, mountPos.x, mountPos.y, mountPos.z);
-        if (ship == null) {
-            System.out.println("null");
-            return null;
-        }
-        Vector3d eulerAngles = new Vector3d();
-        ship.getTransform().getShipToWorldRotation().getEulerAnglesXYZ(eulerAngles);
-        double x = eulerAngles.x;
-        double z = eulerAngles.z;
-        double initialZeta = -eulerAngles.y; // Yaw
-        double initialPsi = 0; // Roll
-        double initialTheta = 0; // Pitch
-
-        if (initialDirection == Direction.NORTH) {
-            initialPsi = -z;
-            initialTheta = x;
-        } else if (initialDirection == Direction.SOUTH) {
-            initialPsi = z;
-            initialTheta = -x;
-        } else if (initialDirection == Direction.EAST) {
-            initialPsi = x;
-            initialTheta = z;
-        } else if (initialDirection == Direction.WEST) {
-            initialPsi = -x;
-            initialTheta = -z;
-        }
-
-//        if(initialTheta < 0){
-//            initialTheta += 2*PI;
-//        }
-//        if(initialZeta < 0){
-//            initialZeta+= 2*PI;
-//        }
-//        if(initialPsi < 0){
-//            initialPsi += 2*PI;
-//        }
-
-        VS2TargetingSolver targetingSolver = new VS2TargetingSolver(level, speed, drag, gravity, barrelLength, mountPos, targetPos, initialTheta, initialZeta, initialPsi, ship);
-        List<List<Double>> pitchAndYaw = targetingSolver.solveThetaZeta();
-        return pitchAndYaw;
-    }
 }
