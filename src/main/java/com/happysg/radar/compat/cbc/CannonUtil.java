@@ -5,9 +5,11 @@ import com.happysg.radar.mixin.AutoCannonAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.phys.Vec3;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlock;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.contraption.AbstractMountedCannonContraption;
@@ -160,5 +162,10 @@ public class CannonUtil {
         }
         return speed;
     }
-
+    public static boolean isUp(Level level , Vec3 mountPos){
+        BlockEntity blockEntity =  level.getBlockEntity(new BlockPos( (int) mountPos.x, (int) mountPos.y, (int) mountPos.z));
+        if(!(blockEntity instanceof CannonMountBlockEntity cannonMountBlockEntity)) return true;
+        if(cannonMountBlockEntity.getContraption() == null) return true;
+        return !(cannonMountBlockEntity.getContraption().position().y < mountPos.y);
+    }
 }

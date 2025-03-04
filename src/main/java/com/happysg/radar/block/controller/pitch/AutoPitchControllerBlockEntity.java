@@ -5,6 +5,7 @@ import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CannonTargeting;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
+import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -145,8 +146,14 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
 
         if (level.getBlockEntity(getBlockPos().relative(getBlockState().getValue(AutoPitchControllerBlock.HORIZONTAL_FACING))) instanceof CannonMountBlockEntity mount) {
-            if (PhysicsHandler.isBlockInShipyard(level, this.getBlockPos())) {
-                CannonTargeting.calculatePitchAndYawVS2(mount, targetPos, (ServerLevel) level);
+            if(PhysicsHandler.isBlockInShipyard(level, this.getBlockPos())) {
+                List<List<Double>> angles = CannonTargeting.calculatePitchAndYawVS2(mount, targetPos, (ServerLevel) level);
+                if(angles == null) return;
+                if(angles.isEmpty()) return;
+                if(angles.get(0).isEmpty()) return;
+                this.targetAngle = angles.get(0).get(0);
+                if(firingControl == null) return;
+                this.firingControl.cannonMount.setYaw(angles.get(0).get(1).floatValue());
             }
             else{
                 List<Double> angles = CannonTargeting.calculatePitch(mount, targetPos, (ServerLevel) level);
