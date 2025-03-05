@@ -8,6 +8,7 @@
   "block.create_radar.plane_radar": "Plane Radar",
   "block.create_radar.radar_bearing": "Radar Bearing",
   "block.create_radar.radar_dish_block": "Radar Dish",
+  "block.create_radar.radar_guidance_block": "Radar Command Guidance",
   "block.create_radar.radar_plate_block": "Radar Plate",
   "block.create_radar.radar_receiver_block": "Radar Receiver Block",
   "block.create_radar.track_controller": "Track Controller",

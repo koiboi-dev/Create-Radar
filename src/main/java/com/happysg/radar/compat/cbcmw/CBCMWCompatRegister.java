@@ -15,9 +15,11 @@ public class CBCMWCompatRegister {
     public static void registerCBCMW() {
         System.out.println("Registering CBCMW Compat!");
         RADAR_GUIDANCE_BLOCK = CreateRadar.REGISTRATE.block("radar_guidance_block", RadarGuidanceBlock::new)
+                .lang("Radar Command Guidance")
                 .initialProperties(SharedProperties::softMetal)
                 .properties(BlockBehaviour.Properties::noOcclusion)
-                .blockstate((c, p) -> p.simpleBlock(c.get(), p.models().getExistingFile(p.modLoc("block/radar_guidance_block"))))
+                .blockstate((ctx, prov) -> prov.directionalBlock(ctx.getEntry(), prov.models()
+                        .getExistingFile(ctx.getId()), 0))
                 .item(RadarGuidanceBlockItem::new)
                 .build()
                 .register();
