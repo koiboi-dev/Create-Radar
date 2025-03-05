@@ -3,6 +3,7 @@ package com.happysg.radar.registry;
 import com.happysg.radar.CreateRadar;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CBCCompatRegister;
+import com.happysg.radar.compat.cbcmw.CBCMWCompatRegister;
 import com.simibubi.create.AllCreativeModeTabs;
 import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.core.registries.Registries;
@@ -47,6 +48,9 @@ public class ModCreativeTabs {
         pOutput.accept(ModBlocks.AUTO_PITCH_CONTROLLER_BLOCK);
         if (Mods.CREATEBIGCANNONS.isLoaded()) {
             pOutput.accept(CBCCompatRegister.GUIDED_FUZE);
+        }
+        if (Mods.CBCMODERNWARFARE.isLoaded()) {
+            pOutput.accept(CBCMWCompatRegister.RADAR_GUIDANCE_BLOCK);
         }
         if (Mods.TRACKWORK.isLoaded()) {
         }

@@ -151,8 +151,7 @@ dependencies {
     implementation fg.deobf("com.rbasamoyai:ritchiesprojectilelib:${rpl_version}") { transitive = false }
 
     //CBCMW
-    implementation fg.deobf("cbcmw:cbcmodernwarfare:0.0.6c+mc.1.20.1-forge")
-
+    implementation fg.deobf("curse.maven:cbc-modern-warfare-1078220:6262257")
 
     //JEI
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
@@ -183,6 +182,7 @@ dependencies {
     runtimeOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_tweaked_version}")
 
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+
 
 }
 
