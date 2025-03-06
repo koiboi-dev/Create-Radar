@@ -74,7 +74,7 @@ public class RadarGuidanceBlock extends MunitionsLauncherGuidanceBlock implement
     }
 
     public float turnRate() {
-        return this.getInfraredProperties().guidanceBlockProperties().turnRate();
+        return 0.15f;
     }
 
     public float addedGravity() {

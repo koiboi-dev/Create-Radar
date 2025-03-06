@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
 import riftyboi.cbcmodernwarfare.cannon_control.contraption.MountedMunitionsLauncherContraption;
-import riftyboi.cbcmodernwarfare.index.CBCModernWarfareBlocks;
 import riftyboi.cbcmodernwarfare.munitions.contraptions.MunitionsPhysicsContraptionEntity;
 import riftyboi.cbcmodernwarfare.munitions.munitions_contraption_launcher.guidance.GuidanceBlockEntity;
 
@@ -71,7 +70,7 @@ public class RadarGuidanceBlockEntity extends GuidanceBlockEntity {
             double t2 = (-b - Math.sqrt(discriminant)) / (2.0 * a);
             timeToIntercept = Math.min(distance, t2) > 0.0 ? Math.min(distance, t2) : Math.max(distance, t2);
         } else {
-            distance = (double) missile.position().distanceTo(target);
+            distance = missile.position().distanceTo(target);
             timeToIntercept = distance / missileSpeed;
         }
 
@@ -79,7 +78,7 @@ public class RadarGuidanceBlockEntity extends GuidanceBlockEntity {
         Vec3 directionToIntercept = interceptPoint.subtract(missilePos).normalize();
         Vec3 currentDirection = missileVelocity.normalize();
         currentDirection.dot(directionToIntercept);
-        double turningRate = this.calculateTurningSpeed((double) missile.getContraption().getBlocks().size(), missileSpeed, CBCModernWarfareBlocks.INFRARED_SEEKER_GUIDANCE.get().defaultBlockState());
+        double turningRate = this.calculateTurningSpeed(missile.getContraption().getBlocks().size(), missileSpeed, getBlockState());
         Vec3 adjustedDirection = currentDirection.lerp(directionToIntercept, turningRate).normalize();
         missile.setContraptionMotion(adjustedDirection.scale(missileSpeed));
     }
