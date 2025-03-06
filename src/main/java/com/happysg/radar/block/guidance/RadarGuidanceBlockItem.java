@@ -41,6 +41,8 @@ public class RadarGuidanceBlockItem extends BlockItem {
         if (tag != null && tag.contains("monitorPos")) {
             BlockPos monitorPos = BlockPos.of(tag.getLong("monitorPos"));
             pTooltip.add(Component.translatable(CreateRadar.MODID + ".guided_fuze.linked_monitor", monitorPos));
+        } else {
+            pTooltip.add(Component.translatable(CreateRadar.MODID + ".guided_fuze.no_monitor"));
         }
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
     }
