@@ -1,6 +1,7 @@
 package com.happysg.radar.block.guidance;
 
 import com.happysg.radar.compat.cbcmw.CBCMWCompatRegister;
+import com.happysg.radar.config.RadarConfig;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
@@ -74,7 +75,7 @@ public class RadarGuidanceBlock extends MunitionsLauncherGuidanceBlock implement
     }
 
     public float turnRate() {
-        return 0.15f;
+        return RadarConfig.server().radarGuidanceTurnRate.getF();
     }
 
     public float addedGravity() {

@@ -4,13 +4,11 @@ import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.block.monitor.MonitorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
-import riftyboi.cbcmodernwarfare.cannon_control.contraption.MountedMunitionsLauncherContraption;
 import riftyboi.cbcmodernwarfare.munitions.contraptions.MunitionsPhysicsContraptionEntity;
 import riftyboi.cbcmodernwarfare.munitions.munitions_contraption_launcher.guidance.GuidanceBlockEntity;
 
@@ -31,18 +29,8 @@ public class RadarGuidanceBlockEntity extends GuidanceBlockEntity {
         return target != null;
     }
 
-    public void tickOnMount(PitchOrientedContraptionEntity mount) {
-        if (!(mount.level() instanceof ServerLevel server)) return;
-        if (monitorPos == null) return;
-        if (target == null) {
-            checkForTarget(server);
-        }
-        if (target != null && mount.getContraption() instanceof MountedMunitionsLauncherContraption cannon) {
-            cannon.fireShot(server, mount);
-        }
-    }
-
     private void checkForTarget(Level server) {
+        if (monitorPos == null) return;
         if (server.getBlockEntity(monitorPos) instanceof MonitorBlockEntity monitor) {
             target = monitor.getController().getTargetPos(TargetingConfig.DEFAULT);
         }

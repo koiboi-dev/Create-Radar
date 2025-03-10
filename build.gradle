@@ -153,6 +153,10 @@ dependencies {
     //CBCMW
     implementation fg.deobf("curse.maven:cbc-modern-warfare-1078220:6262257")
 
+    //CBCAT
+    implementation fg.deobf("curse.maven:create-big-cannons-advanced-technologies-1180196:6136662")
+
+
     //JEI
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
