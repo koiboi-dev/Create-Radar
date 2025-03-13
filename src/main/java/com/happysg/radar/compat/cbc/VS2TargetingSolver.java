@@ -7,6 +7,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.*;
 import org.apache.commons.math3.random.RandomVectorGenerator;
 import org.joml.Matrix4dc;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.*;
@@ -53,35 +55,50 @@ public class VS2TargetingSolver {
 
     private MultivariateFunction createFunction() { //TODO vypočítat čas z ZED a pak použít na vypočet y a x
         return point -> {
-//            Vec3 shipyardFrontOfBarrel = getFrontOfBarrel(level, mountPos);
-//            if(shipyardFrontOfBarrel == null) return Double.POSITIVE_INFINITY;
+
             double theta = point[0];
             double zeta = point[1];
             double thetaRad = toRadians(theta);
             double zetaRad = toRadians(zeta);
-
-            Vec3 shipyardFrontOfBarrel = mountPos.add(cos(zetaRad+PI/2)*cos(thetaRad)*l, sin(thetaRad)*l, sin(zetaRad+PI/2)*cos(thetaRad)*l);
+            Vec3 pivotPoint = mountPos;
+            Vec3 shipyardFrontOfBarrel = mountPos.add(cos(zetaRad+PI/2)*cos(thetaRad)*l, sin(thetaRad)*l, sin(zetaRad+PI/2)*cos(thetaRad)*l); //+90 degrees cuz used a space offset by that in my math and was too lazy to rewrite it all
             if(isUp(level, mountPos)){
-                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,2.5,0);
+                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,2,0);
+                pivotPoint = pivotPoint.add(0,2,0);
             }
             else {
-                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,-2.5,0);
+                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,-2,0);
+                pivotPoint = pivotPoint.add(0,2,0);
             }
             Vec3 frontOfBarrel = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(shipyardFrontOfBarrel)));
-            Vec3 diffVec = targetPos.subtract(frontOfBarrel); // opravit barrel location
+            pivotPoint = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(pivotPoint)));
+            Vec3 diffVec = targetPos.subtract(frontOfBarrel);
             double dZ = diffVec.z;
-            double dY = diffVec.y;
+            double dY = diffVec.y+1; //kinda band-aid
             double dX = diffVec.x;
 
-            double summedTheta = thetaRad+initialTheta;
-            double summedZeta = zetaRad+initialZeta;
-            theta = cos(initialPsi)*(summedTheta)-sin(initialPsi)*(summedZeta); // TODO opravit tohle
-            zeta = sin(initialPsi)*(summedTheta)+cos(initialPsi)*(summedZeta); //TODO aj toto
-
-            zetaRad = zeta;
-            thetaRad = theta;
-
-            zetaRad+=PI/2;
+            Vector3f pivotVector = frontOfBarrel.subtract(pivotPoint).toVector3f();
+            pivotVector = pivotVector.normalize();
+            double pitch = asin(pivotVector.y);
+            double pomAngle = asin(abs(pivotVector.z)/cos(pitch));
+            double yaw;
+            if(pivotVector.x < 0 && pivotVector.z < 0){
+                yaw = PI+pomAngle;
+            }
+            else if(pivotVector.x < 0 && pivotVector.z > 0){
+                yaw = PI - pomAngle;
+            }
+            else if(pivotVector.x > 0 && pivotVector.z > 0){
+                yaw = pomAngle;
+            }
+            else if(pivotVector.x > 0 && pivotVector.z < 0){
+                yaw = 2*PI - pomAngle;
+            }
+            else {
+                yaw = 0;
+            }
+            thetaRad = Double.isNaN(pitch) ? 0 : pitch;
+            zetaRad = Double.isNaN(yaw) ? 0 : yaw;
 
             double log = 1-(drag*dZ)/(u*cos(thetaRad)*sin(zetaRad));
             if(log <= 0) return Double.POSITIVE_INFINITY;
@@ -89,8 +106,6 @@ public class VS2TargetingSolver {
             if(time <= 0) return Double.POSITIVE_INFINITY;
             double dragDecay = (1-exp(-drag*time));
             double newX = u*cos(thetaRad)*cos(zetaRad)*dragDecay/drag;
-            //double newY = (u*sin(thetaRad))*dragDecay/drag - g*time/drag;
-
 
             double newY = (drag*u*sin(thetaRad)+g)*dragDecay/(drag*drag) - g*time/drag;
             return abs(dY-newY)+abs(dX-newX);
@@ -101,8 +116,8 @@ public class VS2TargetingSolver {
         @Override
         public double[] nextVector() {
             // Define your bounds:
-            double thetaLower = -30;
-            double thetaUpper = 60;
+            double thetaLower = -90;
+            double thetaUpper = 90;
             double zetaLower = 0;
             double zetaUpper = 360;
             double theta = thetaLower + random.nextDouble() * (thetaUpper - thetaLower);
@@ -142,8 +157,7 @@ public class VS2TargetingSolver {
                 double[] point = opt.getPoint();
                 double theta = point[0];
                 double zeta = point[1];
-                // Use a key with rounding to filter out duplicate solutions.
-                String key = String.format("%.3f_%.3f", theta, zeta);
+                String key = String.format("%d_%d", (int) Math.floor(theta), (int) Math.floor(zeta));
                 if (!uniqueSolutions.contains(key)) {
                     uniqueSolutions.add(key);
                     List<Double> pair = new ArrayList<>();

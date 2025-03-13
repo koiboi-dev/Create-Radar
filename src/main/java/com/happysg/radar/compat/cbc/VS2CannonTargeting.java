@@ -25,7 +25,7 @@ public class VS2CannonTargeting {
         }
         float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
 
-        Vec3 mountPos = new Vec3(mount.getBlockPos().getX(), mount.getBlockPos().getY(), mount.getBlockPos().getZ());
+        Vec3 mountPos = mount.getBlockPos().getCenter();
         int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
         Direction initialDirection = cannonContraption.initialOrientation();
 
@@ -43,7 +43,7 @@ public class VS2CannonTargeting {
             return null;
         }
         Vector3d eulerAngles = new Vector3d();
-        ship.getTransform().getShipToWorldRotation().getEulerAnglesXYZ(eulerAngles);
+        ship.getTransform().getShipToWorldRotation().getEulerAnglesYXZ(eulerAngles);
         double x = eulerAngles.x;
         double z = eulerAngles.z;
         double initialZeta = -eulerAngles.y; // Yaw
@@ -63,16 +63,6 @@ public class VS2CannonTargeting {
             initialPsi = -x;
             initialTheta = -z;
         }
-
-//        if(initialTheta < 0){
-//            initialTheta += 2*PI;
-//        }
-//        if(initialZeta < 0){
-//            initialZeta+= 2*PI;
-//        }
-//        if(initialPsi < 0){
-//            initialPsi += 2*PI;
-//        }
 
         VS2TargetingSolver targetingSolver = new VS2TargetingSolver(level, speed, drag, gravity, barrelLength, mountPos, targetPos, initialTheta, initialZeta, initialPsi, ship);
         List<List<Double>> pitchAndYaw = targetingSolver.solveThetaZeta();
