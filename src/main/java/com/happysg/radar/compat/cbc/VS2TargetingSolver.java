@@ -13,9 +13,9 @@ import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.*;
 
+import static com.happysg.radar.compat.cbc.CannonUtil.getCannonMountOffset;
 import static com.happysg.radar.compat.cbc.CannonUtil.isUp;
-import static com.happysg.radar.compat.vs2.VS2Utils.getVec3FromVector;
-import static com.happysg.radar.compat.vs2.VS2Utils.getVector3dFromVec3;
+import static com.happysg.radar.compat.vs2.VS2Utils.*;
 import static java.lang.Math.*;
 
 public class VS2TargetingSolver {
@@ -62,16 +62,14 @@ public class VS2TargetingSolver {
             double zetaRad = toRadians(zeta);
             Vec3 pivotPoint = mountPos;
             Vec3 shipyardFrontOfBarrel = mountPos.add(cos(zetaRad+PI/2)*cos(thetaRad)*l, sin(thetaRad)*l, sin(zetaRad+PI/2)*cos(thetaRad)*l); //+90 degrees cuz used a space offset by that in my math and was too lazy to rewrite it all
-            if(isUp(level, mountPos)){
-                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,2,0);
-                pivotPoint = pivotPoint.add(0,2,0);
-            }
-            else {
-                shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(0,-2,0);
-                pivotPoint = pivotPoint.add(0,2,0);
-            }
+
+            Vec3 offset = getCannonMountOffset(level, getBlockPosFromVec3(mountPos));
+            pivotPoint.add(offset);
+            shipyardFrontOfBarrel.add(offset);
+
             Vec3 frontOfBarrel = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(shipyardFrontOfBarrel)));
             pivotPoint = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(pivotPoint)));
+
             Vec3 diffVec = targetPos.subtract(frontOfBarrel);
             double dZ = diffVec.z;
             double dY = diffVec.y+1; //kinda band-aid
@@ -80,22 +78,9 @@ public class VS2TargetingSolver {
             Vector3f pivotVector = frontOfBarrel.subtract(pivotPoint).toVector3f();
             pivotVector = pivotVector.normalize();
             double pitch = asin(pivotVector.y);
-            double pomAngle = asin(abs(pivotVector.z)/cos(pitch));
-            double yaw;
-            if(pivotVector.x < 0 && pivotVector.z < 0){
-                yaw = PI+pomAngle;
-            }
-            else if(pivotVector.x < 0 && pivotVector.z > 0){
-                yaw = PI - pomAngle;
-            }
-            else if(pivotVector.x > 0 && pivotVector.z > 0){
-                yaw = pomAngle;
-            }
-            else if(pivotVector.x > 0 && pivotVector.z < 0){
-                yaw = 2*PI - pomAngle;
-            }
-            else {
-                yaw = 0;
+            double yaw = Math.atan2(pivotVector.z, pivotVector.x);
+            if (yaw < 0) {
+                yaw += 2 * Math.PI;
             }
             thetaRad = Double.isNaN(pitch) ? 0 : pitch;
             zetaRad = Double.isNaN(yaw) ? 0 : yaw;
@@ -127,7 +112,7 @@ public class VS2TargetingSolver {
     };
 
     public List<List<Double>> solveThetaZeta() {
-        int numStarts = 10; // Number of starting points for multi-start optimization.
+        int numStarts = 2; // Number of starting points for multi-start optimization.
         MultiStartMultivariateOptimizer optimizer = new MultiStartMultivariateOptimizer(
                 new BOBYQAOptimizer(5), numStarts, randomVectorGenerator
         );
@@ -140,7 +125,7 @@ public class VS2TargetingSolver {
                     new MaxEval(1000),
                     new ObjectiveFunction(createFunction()),
                     GoalType.MINIMIZE,
-                    new InitialGuess(new double[]{0, 0}),  // initial guess (will be varied in multi-start)
+                    new InitialGuess(new double[]{0, 0}),
                     new SimpleBounds(lowerBounds, upperBounds)
             );
         } catch (Exception e) {

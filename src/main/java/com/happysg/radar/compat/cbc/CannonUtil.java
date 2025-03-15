@@ -5,6 +5,7 @@ import com.happysg.radar.mixin.AbstractCannonAccessor;
 import com.happysg.radar.mixin.AutoCannonAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +43,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static riftyboi.cbcmodernwarfare.cannon_control.compact_mount.CompactCannonMountBlock.HORIZONTAL_FACING;
+
 public class CannonUtil {
 
     public static int getBarrelLength(AbstractMountedCannonContraption cannon) {
@@ -61,9 +64,20 @@ public class CannonUtil {
     public static Vec3 getCannonMountOffset(BlockEntity mount) {
         Vec3 offset = null;
         if(Mods.CBCMODERNWARFARE.isLoaded() && mount instanceof CompactCannonMountBlockEntity){
-
+            Direction direction = mount.getBlockState().getValue(HORIZONTAL_FACING);
+            if(direction == Direction.EAST){
+                offset = new Vec3(0,0,1);
+            }
+            else if(direction == Direction.SOUTH){
+                offset = new Vec3(-1,0,0);
+            }
+            else if(direction == Direction.WEST){
+                offset = new Vec3(0,0,-1);
+            }
+            else if(direction == Direction.NORTH){
+                offset = new Vec3(1,0,0);
+            }
         }
-
         else{
             if(isUp(mount)){
                 offset = new Vec3(0,2,0);
