@@ -4,6 +4,7 @@ import com.happysg.radar.compat.Mods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -118,6 +119,9 @@ public class VS2Utils {
     }
     public static Vec3 getVec3FromVector(Vector3d vector) {
         return new Vec3(vector.x, vector.y, vector.z);
+    }
+    public static BlockPos getBlockPosFromVec3(Vec3 vec3) {
+        return new BlockPos((int) vec3.x, (int) vec3.y, (int) vec3.z);
     }
     public static Vector3d  getVector3dFromVec3(Vec3 vec) {
         return new Vector3d(vec.x, vec.y, vec.z);
