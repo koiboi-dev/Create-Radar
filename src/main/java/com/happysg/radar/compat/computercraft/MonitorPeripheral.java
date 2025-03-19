@@ -2,13 +2,8 @@ package com.happysg.radar.compat.computercraft;
 
 import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.monitor.MonitorBlockEntity;
-import com.happysg.radar.block.monitor.MonitorFilter;
 import com.happysg.radar.block.radar.track.RadarTrack;
-import com.simibubi.create.compat.computercraft.implementation.peripherals.SyncedPeripheral;
-import dan200.computercraft.api.lua.IArguments;
-import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
-import dan200.computercraft.api.lua.LuaTable;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 
 import java.util.*;
