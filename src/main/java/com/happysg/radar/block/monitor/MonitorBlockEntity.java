@@ -315,4 +315,12 @@ public class MonitorBlockEntity extends SmartBlockEntity implements IHaveHoverin
     public boolean tryRemoveAABB(BlockPos pos) {
         return safeZones.removeIf(safeZone -> safeZone.contains(Vec3.atCenterOf(pos)));
     }
+
+    public String getHoveredEntity() {
+        return hoveredEntity;
+    }
+
+    public String getSelectedEntity() {
+        return selectedEntity;
+    }
 }

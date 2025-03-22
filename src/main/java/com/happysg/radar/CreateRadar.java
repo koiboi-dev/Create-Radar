@@ -6,6 +6,7 @@ import com.happysg.radar.block.monitor.MonitorInputHandler;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CBCCompatRegister;
 import com.happysg.radar.compat.cbcmw.CBCMWCompatRegister;
+import com.happysg.radar.compat.computercraft.CCCompatRegister;
 import com.happysg.radar.config.RadarConfig;
 import com.happysg.radar.networking.ModMessages;
 import com.happysg.radar.registry.*;
@@ -63,6 +64,9 @@ public class CreateRadar {
             CBCCompatRegister.registerCBC();
         if (Mods.CBCMODERNWARFARE.isLoaded())
             CBCMWCompatRegister.registerCBCMW();
+        if (Mods.COMPUTERCRAFT.isLoaded())
+            CCCompatRegister.registerPeripherals();
+
 
     }
 
