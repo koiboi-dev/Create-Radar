@@ -1,7 +1,6 @@
 package com.happysg.radar.compat.cbc;
 
 import com.happysg.radar.compat.vs2.PhysicsHandler;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -25,7 +24,23 @@ public class CannonTargeting {
         return dX * Math.tan(thetaRad) + (dX * g) / (drag * speed * Math.cos(thetaRad)) + g*log / (drag * drag);
     }
 
-    public static List<Double> calculatePitch(double speed, Vec3 targetPos, Vec3 originPos, int barrelLength, double drag, double gravity) {
+    public static List<Double> calculatePitch(CannonMountBlockEntity mount, Vec3 targetPos, ServerLevel level) {
+        if (mount == null || targetPos == null) {
+            return null;
+        }
+
+        PitchOrientedContraptionEntity contraption = mount.getContraption();
+        if ( contraption == null || !(contraption.getContraption() instanceof AbstractMountedCannonContraption cannonContraption)) {
+            return null;
+        }
+        float speed = CannonUtil.getInitialVelocity(cannonContraption, level);
+
+        Vec3 originPos = PhysicsHandler.getWorldVec(level, mount.getBlockPos().above(2).getCenter());
+        int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
+
+        double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
+        double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
+
         if (speed == 0) {
             return null;
         }
@@ -70,46 +85,4 @@ public class CannonTargeting {
         }
         return roots;
     }
-
-    public static List<Double> calculatePitch(CannonMountBlockEntity mount, Vec3 targetPos, ServerLevel level) {
-        if (mount == null || targetPos == null) {
-            return null;
-        }
-
-        PitchOrientedContraptionEntity contraption = mount.getContraption();
-        if ( contraption == null || !(contraption.getContraption() instanceof AbstractMountedCannonContraption cannonContraption)) {
-            return null;
-        }
-        float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
-
-        Vec3 mountPos = PhysicsHandler.getWorldVec(level, mount.getBlockPos().above(2).getCenter());
-        int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
-
-        double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
-        double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
-
-        return calculatePitch(chargePower, PhysicsHandler.getWorldVec(level, targetPos), mountPos, barrelLength, drag, gravity);
-    }
-
-    public static List<List<Double>> calculatePitchAndYawVS2(CannonMountBlockEntity mount, Vec3 targetPos, ServerLevel level) {
-        if (mount == null || targetPos == null) {
-            return null;
-        }
-
-        PitchOrientedContraptionEntity contraption = mount.getContraption();
-        if ( contraption == null || !(contraption.getContraption() instanceof AbstractMountedCannonContraption cannonContraption)) {
-            return null;
-        }
-        float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
-
-        Vec3 mountPos = mount.getBlockPos().getCenter() ;
-        int barrelLength = CannonUtil.getBarrelLength(cannonContraption);
-        Direction initialDirection = cannonContraption.initialOrientation();
-
-        double drag = CannonUtil.getProjectileDrag(cannonContraption, level);
-        double gravity = CannonUtil.getProjectileGravity(cannonContraption, level);
-
-        return VS2CannonTargeting.calculatePitchAndYawVS2(level, chargePower, targetPos, mountPos, barrelLength, initialDirection, drag, gravity);
-    }
-
 }

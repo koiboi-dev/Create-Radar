@@ -1,11 +1,11 @@
 package com.happysg.radar.compat.cbc;
 
+import com.dsvv.cbcat.cannon.RifledBarrelBlockEntity;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.mixin.AbstractCannonAccessor;
 import com.happysg.radar.mixin.AutoCannonAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -197,10 +197,15 @@ public class CannonUtil {
         return 0.05;
     }
 
-    public static double getProjectileDrag(AbstractMountedCannonContraption cannon, ServerLevel level) {//TODO remove defaults
+    public static double getProjectileDrag(AbstractMountedCannonContraption cannon, ServerLevel level) {
         Map<BlockPos, BlockEntity> presentBlockEntities = cannon.presentBlockEntities;
+        double drag = 0.01;
+        int rifledBarrelAmount = 0;
         for (BlockEntity blockEntity : presentBlockEntities.values()) {
             if (!(blockEntity instanceof IBigCannonBlockEntity cannonBlockEntity)) continue;
+            if(Mods.CBC_AT.isLoaded() && blockEntity instanceof RifledBarrelBlockEntity){
+                rifledBarrelAmount+=1;
+            }
             BigCannonBehavior behavior = cannonBlockEntity.cannonBehavior();
             StructureTemplate.StructureBlockInfo containedBlockInfo = behavior.block();
 
@@ -214,12 +219,12 @@ public class CannonUtil {
                     ballisticProperties = (BallisticPropertiesComponent) method.invoke(projectile);
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
                          ClassCastException e) {
-                    return 0.01;
+                    return drag;
                 }
-                return ballisticProperties.drag();
+                drag = ballisticProperties.drag();
             }
         }
-        return 0.01;
+        return drag;
     }
 
     public static boolean isBigCannon(AbstractMountedCannonContraption cannon) {

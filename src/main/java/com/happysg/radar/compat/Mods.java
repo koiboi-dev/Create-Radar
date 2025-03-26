@@ -19,7 +19,9 @@ public enum Mods {
     COMPUTERCRAFT,
     TRACKWORK,
     CBCMODERNWARFARE,
+    CBC_AT,
     CREATEBIGCANNONS;
+
     private final String id;
 
     Mods() {

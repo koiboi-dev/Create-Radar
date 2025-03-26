@@ -48,9 +48,7 @@ public class FiringControlBlockEntity {
     }
 
     private boolean isTargetInRange() {
-        if (target == null || !hasCorrectYawPitch() || passesSafeZone())
-            return false;
-        return true;
+        return target != null && hasCorrectYawPitch() && !passesSafeZone();
     }
     private boolean passesSafeZone() {
         if(!(level instanceof ServerLevel)) { return false; }
