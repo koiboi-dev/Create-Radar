@@ -5,7 +5,9 @@ import com.happysg.radar.config.RadarConfig;
 import com.jozufozu.flywheel.util.Color;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.valkyrienskies.core.api.ships.Ship;
 
 
 public class RadarTrack {
@@ -76,6 +78,18 @@ public class RadarTrack {
         return tag;
     }
 
+    public void updateRadarTrack(Entity entity) {
+        position = entity.position();
+        velocity = entity.getDeltaMovement();
+        scannedTime = entity.level().getGameTime();
+    }
+
+    public void updateRadarTrack(Ship ship, Level level) {
+        position = RadarTrackUtil.getPosition(ship);
+        velocity = RadarTrackUtil.getVelocity(ship);
+        scannedTime = level.getGameTime();
+    }
+
     public String getId() {
         return id;
     }
@@ -110,5 +124,25 @@ public class RadarTrack {
 
     public String getEntityType() {
         return entityType;
+    }
+
+    // This is a bit of a jank quick fix, since ive migrated from a record.
+    public String id() {
+        return getId();
+    }
+    public Vec3 position() {
+        return getPosition();
+    }
+    public Vec3 velocity() {
+        return getVelocity();
+    }
+    public long scannedTime() {
+        return getScannedTime();
+    }
+    public TrackCategory trackCategory() {
+        return getTrackCategory();
+    }
+    public String entityType() {
+        return getEntityType();
     }
 }
