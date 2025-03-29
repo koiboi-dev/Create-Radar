@@ -8,8 +8,22 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 
-public record RadarTrack(String id, Vec3 position, Vec3 velocity, long scannedTime,
-                         TrackCategory trackCategory, String entityType) {
+public class RadarTrack {
+    private final String id;
+    private Vec3 position;
+    private Vec3 velocity;
+    private long scannedTime;
+    private final TrackCategory trackCategory;
+    private final String entityType;
+
+    public RadarTrack(String id, Vec3 position, Vec3 velocity, long scannedTime, TrackCategory trackCategory, String entityType) {
+        this.id = id;
+        this.position = position;
+        this.velocity = velocity;
+        this.scannedTime = scannedTime;
+        this.trackCategory = trackCategory;
+        this.entityType = entityType;
+    }
 
     public RadarTrack(Entity entity) {
         this(entity.getUUID().toString(), entity.position(), entity.getDeltaMovement(), entity.level().getGameTime(),
@@ -62,5 +76,39 @@ public record RadarTrack(String id, Vec3 position, Vec3 velocity, long scannedTi
         return tag;
     }
 
+    public String getId() {
+        return id;
+    }
 
+    public Vec3 getPosition() {
+        return position;
+    }
+
+    public void setPosition(Vec3 position) {
+        this.position = position;
+    }
+
+    public Vec3 getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(Vec3 velocity) {
+        this.velocity = velocity;
+    }
+
+    public long getScannedTime() {
+        return scannedTime;
+    }
+
+    public void setScannedTime(long scannedTime) {
+        this.scannedTime = scannedTime;
+    }
+
+    public TrackCategory getTrackCategory() {
+        return trackCategory;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
 }

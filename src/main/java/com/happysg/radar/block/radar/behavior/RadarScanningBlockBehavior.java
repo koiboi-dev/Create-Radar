@@ -70,9 +70,18 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         Level level = blockEntity.getLevel();
         if (level == null) return;
         for (Entity entity : scannedEntities) {
-            if (entity.isAlive() && isInFovAndRange(entity.position()) && !radarTracks.containsKey(entity.getUUID().toString())) {
-                RadarTrack track = new RadarTrack(entity);
-                radarTracks.put(track.id(), track);
+            if (entity.isAlive() && isInFovAndRange(entity.position())) {
+                // RadarTrack track = new RadarTrack(entity);
+                // radarTracks.put(track.getId(), track);
+                if (radarTracks.containsKey(entity.getUUID().toString())) {
+                    RadarTrack track = radarTracks.get(entity.getUUID().toString());
+                    track.setPosition(entity.position());
+                    track.setVelocity(entity.getDeltaMovement());
+                    track.setScannedTime(entity.level().getGameTime());
+                } else {
+                    RadarTrack track = new RadarTrack(entity);
+                    radarTracks.put(track.getId(), track);
+                }
                 if (entity instanceof Projectile)
                     scannedProjectiles.add((Projectile) entity);
             }
@@ -80,12 +89,12 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         for (Ship ship : scannedShips) {
             if (isInFovAndRange(RadarTrackUtil.getPosition(ship))) {
                 RadarTrack track = RadarTrackUtil.getRadarTrack(ship, level);
-                radarTracks.put(track.id(), track);
+                radarTracks.put(track.getId(), track);
             }
         }
         for (Projectile projectile : scannedProjectiles) {
             RadarTrack track = new RadarTrack(projectile);
-            radarTracks.put(track.id(), track);
+            radarTracks.put(track.getId(), track);
         }
     }
 
