@@ -31,7 +31,7 @@ public class AutoYawControllerBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     private void tryRotateCannon() {
-        if (level.isClientSide())
+        if (level == null || level.isClientSide())
             return;
         if (!isRunning)
             return;
@@ -110,7 +110,7 @@ public class AutoYawControllerBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     public void setTarget(Vec3 targetPos) {
-        if (level.isClientSide())
+        if (level == null || level.isClientSide())
             return;
         if (PhysicsHandler.isBlockInShipyard(level, this.getBlockPos()))
             return;
@@ -134,7 +134,7 @@ public class AutoYawControllerBlockEntity extends GeneratingKineticBlockEntity {
 
     public boolean atTargetYaw() {
         BlockPos turretPos = getBlockPos().above();
-        if (!(level.getBlockEntity(turretPos) instanceof CannonMountBlockEntity mount))
+        if (level == null || !(level.getBlockEntity(turretPos) instanceof CannonMountBlockEntity mount))
             return false;
         PitchOrientedContraptionEntity contraption = mount.getContraption();
         if (contraption == null)

@@ -65,7 +65,6 @@ public class VS2CannonTargeting {
         }
 
         VS2TargetingSolver targetingSolver = new VS2TargetingSolver(level, speed, drag, gravity, barrelLength, mountPos, targetPos, initialTheta, initialZeta, initialPsi, ship);
-        List<List<Double>> pitchAndYaw = targetingSolver.solveThetaZeta();
-        return pitchAndYaw;
+        return targetingSolver.solveThetaZeta();
     }
 }

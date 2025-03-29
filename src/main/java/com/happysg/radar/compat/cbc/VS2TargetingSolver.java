@@ -7,14 +7,12 @@ import org.apache.commons.math3.optim.nonlinear.scalar.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.*;
 import org.apache.commons.math3.random.RandomVectorGenerator;
 import org.joml.Matrix4dc;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.*;
 
 import static com.happysg.radar.compat.cbc.CannonUtil.getCannonMountOffset;
-import static com.happysg.radar.compat.cbc.CannonUtil.isUp;
 import static com.happysg.radar.compat.vs2.VS2Utils.*;
 import static java.lang.Math.*;
 

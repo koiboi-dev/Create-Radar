@@ -4,6 +4,7 @@ import com.happysg.radar.block.controller.firing.FiringControlBlockEntity;
 import com.happysg.radar.block.datalink.screens.TargetingConfig;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.CannonTargeting;
+import com.happysg.radar.compat.cbc.VS2CannonTargeting;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -38,7 +39,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
         super.initialize();
         if (Mods.CREATEBIGCANNONS.isLoaded()) {
             BlockPos cannonMountPos = getBlockPos().relative(getBlockState().getValue(AutoPitchControllerBlock.HORIZONTAL_FACING));
-            if (level.getBlockEntity(cannonMountPos) instanceof CannonMountBlockEntity mount) {
+            if (level != null && level.getBlockEntity(cannonMountPos) instanceof CannonMountBlockEntity mount) {
                 firingControl = new FiringControlBlockEntity(this, mount);
             }
         }
@@ -57,7 +58,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
     }
 
     private void tryRotateCannon() {
-        if (level.isClientSide())
+        if (level == null || level.isClientSide())
             return;
 
 
@@ -98,7 +99,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
     public boolean atTargetPitch() {
         BlockPos turretPos = getBlockPos().relative(getBlockState().getValue(AutoPitchControllerBlock.HORIZONTAL_FACING));
-        if (!(level.getBlockEntity(turretPos) instanceof CannonMountBlockEntity mount))
+        if (level == null || !(level.getBlockEntity(turretPos) instanceof CannonMountBlockEntity mount))
             return false;
         PitchOrientedContraptionEntity contraption = mount.getContraption();
         if (contraption == null)
@@ -135,7 +136,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
     }
 
     public void setTarget(Vec3 targetPos) {
-        if (level.isClientSide())
+        if (level == null || level.isClientSide())
             return;
         if (targetPos == null) {
             isRunning = false;
@@ -146,7 +147,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
         if (level.getBlockEntity(getBlockPos().relative(getBlockState().getValue(AutoPitchControllerBlock.HORIZONTAL_FACING))) instanceof CannonMountBlockEntity mount) {
             if(PhysicsHandler.isBlockInShipyard(level, this.getBlockPos())) {
-                List<List<Double>> angles = CannonTargeting.calculatePitchAndYawVS2(mount, targetPos, (ServerLevel) level);
+                List<List<Double>> angles = VS2CannonTargeting.calculatePitchAndYawVS2(mount, targetPos, (ServerLevel) level);
                 if(angles == null) return;
                 if(angles.isEmpty()) return;
                 if(angles.get(0).isEmpty()) return;

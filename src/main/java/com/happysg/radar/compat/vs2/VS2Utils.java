@@ -4,7 +4,6 @@ import com.happysg.radar.compat.Mods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -23,10 +22,10 @@ public class VS2Utils {
             return pos;
         if (VSGameUtilsKt.getShipObjectManagingPos(level, pos) != null) {
             final LoadedShip loadedShip = VSGameUtilsKt.getShipObjectManagingPos(level, pos);
+            if(loadedShip == null) return null;
             final Vector3d vec = loadedShip.getShipToWorld().transformPosition(new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
             VectorConversionsMCKt.toMinecraft(vec);
-            final BlockPos newPos = new BlockPos((int) vec.x(), (int) vec.y(), (int) vec.z());
-            return newPos;
+            return new BlockPos((int) vec.x(), (int) vec.y(), (int) vec.z());
         }
         return pos;
     }
@@ -93,6 +92,7 @@ public class VS2Utils {
         if (VSGameUtilsKt.getShipObjectManagingPos(level, pos) != null) {
             final LoadedShip loadedShip = VSGameUtilsKt.getShipObjectManagingPos(level, pos);
             Vec3 center = pos.getCenter();
+            if(loadedShip == null) return null;
             final Vector3d vec = loadedShip.getShipToWorld().transformPosition(new Vector3d(center.x, center.y, center.z));
             VectorConversionsMCKt.toMinecraft(vec);
             return new Vec3(vec.x(), vec.y(), vec.z());
@@ -105,6 +105,7 @@ public class VS2Utils {
         Vec3i vec3i = new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z);
         if (VSGameUtilsKt.getShipObjectManagingPos(level, vec3i) != null) {
             final LoadedShip loadedShip = VSGameUtilsKt.getShipObjectManagingPos(level, vec3i);
+            if(loadedShip == null) return null;
             final Vector3d vec = loadedShip.getShipToWorld().transformPosition(new Vector3d(vec3.x, vec3.y, vec3.z));
             VectorConversionsMCKt.toMinecraft(vec);
             return new Vec3(vec.x(), vec.y(), vec.z());
