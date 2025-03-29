@@ -71,13 +71,14 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         if (level == null) return;
         for (Entity entity : scannedEntities) {
             if (entity.isAlive() && isInFovAndRange(entity.position())) {
-                if (radarTracks.containsKey(entity.getUUID().toString())) {
+              if (radarTracks.containsKey(entity.getUUID().toString())) {
                     RadarTrack track = radarTracks.get(entity.getUUID().toString());
                     track.updateRadarTrack(entity);
                 } else {
                     RadarTrack track = new RadarTrack(entity);
                     radarTracks.put(track.getId(), track);
                 }
+
                 if (entity instanceof Projectile)
                     scannedProjectiles.add((Projectile) entity);
             }
