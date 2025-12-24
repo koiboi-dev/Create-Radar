@@ -153,13 +153,13 @@ dependencies {
 
     //JEI
 //    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-//    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
-    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+//    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     //Clockwork
     //replace implementation instead of compileOnly after clockwork is compatible with 6.0
     compileOnly fg.deobf("maven.modrinth:create-clockwork:${minecraft_version}-${clockwork_version}")
-    compileOnly fg.deobf("maven.modrinth:architectury-api:${architectury_api_version}+forge")
+    compileOnly fg.deobf("maven.modrinth:architectury-api:${architectury_api_version}+neoforge")
 
     //Valkyrien Skies
     //replace implementation instead of compileOnly after vs2 is compatible with 6.0
@@ -179,8 +179,8 @@ dependencies {
 
     //CC
     compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cc_tweaked_version}")
-    compileOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}")
-    runtimeOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_tweaked_version}")
+    compileOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-neoforge-api:${cc_tweaked_version}")
+    runtimeOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-neoforge:${cc_tweaked_version}")
 
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
@@ -199,7 +199,7 @@ mixin {
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version       : forge_version, forge_version_range: forge_version_range,
+            neo_version       : neo_version, neo_version_range: neo_version_range,
             loader_version_range: loader_version_range,
             mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors         : mod_authors, mod_description: mod_description, create_version_range: create_version_range
