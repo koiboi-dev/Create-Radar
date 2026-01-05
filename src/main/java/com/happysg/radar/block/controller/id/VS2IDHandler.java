@@ -11,14 +11,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.valkyrienskies.core.api.ships.Ship;
 
-
-//Done to avoid loading vs2 classes when the mod is not loaded
+// Done to avoid loading VS2 classes when the mod is not loaded
 public class VS2IDHandler {
 
     public static @NotNull InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, @NotNull Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
@@ -27,15 +23,15 @@ public class VS2IDHandler {
             pPlayer.displayClientMessage(Component.translatable("create_radar.id_block.not_on_ship"), true);
             return InteractionResult.PASS;
         }
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> displayScreen(ship, pPlayer));
+
+        if (pLevel.isClientSide && pPlayer instanceof LocalPlayer local) {
+            displayScreen(ship, local);
+        }
+
         return InteractionResult.SUCCESS;
     }
 
-    @OnlyIn(value = Dist.CLIENT)
-    private static void displayScreen(Ship ship, Player player) {
-        if (!(player instanceof LocalPlayer))
-            return;
+    private static void displayScreen(Ship ship, LocalPlayer player) {
         ScreenOpener.open(new IDBlockScreen(ship));
     }
 
