@@ -35,9 +35,19 @@ repositories {
     }
 
     maven {
+        name = 'Kotlin for Forge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+    }
+
+    maven {
         // location of maven for CC: Tweaked
         name = "squiddev"
         url = "https://squiddev.cc/maven/"
+    }
+
+    maven {
+        name = "Valkyrien Skies Internal"
+        url = 'https://maven.valkyrienskies.org'
     }
 }
 
@@ -127,6 +137,10 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     implementation "com.simibubi.create:create-${minecraft_version}:${create_version}"
     runtimeOnly("dev.architectury:architectury-neoforge:13d.0.8")
+    compileOnly "thedarkcolour:kotlinforforge:${forge_kotlin_version}"
+
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$minecraft_version:$flywheel_version")
     runtimeOnly(jarJar("dev.engine-room.flywheel:flywheel-neoforge-$minecraft_version:$flywheel_version") {
@@ -137,6 +151,28 @@ dependencies {
     })
 
     implementation("net.createmod.ponder:Ponder-NeoForge-$minecraft_version:$ponder_version")
+
+    implementation("maven.modrinth:create-big-cannons:${cbc_version}")
+    implementation("maven.modrinth:rpl:${rpl_version}")
+
+    compileOnly("maven.modrinth:cbcmodernwarfare:${cbc_mw_version}+mc.1.20.1-forge")
+    compileOnly("maven.modrinth:create-big-cannons-advanced-technologies:${cbc_at_version}-1.20.1")
+
+    compileOnly("org.valkyrienskies.core:api:${vs_core_version}")
+    compileOnly("org.valkyrienskies.core:impl:${vs_core_version}")
+    compileOnly("org.valkyrienskies.core:api-game:${vs_core_version}")
+    compileOnly("org.valkyrienskies.core:util:${vs_core_version}")
+    compileOnly("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}")
+    compileOnly "org.joml:joml:1.10.5"
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
+
+    compileOnly("maven.modrinth:trackwork:1.20.1-${trackwork_version}")
+    compileOnly("maven.modrinth:create-clockwork:1.20.1-${clockwork_version}")
+
+    compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cc_tweaked_version}")
+    compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}")
+    runtimeOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_tweaked_version}")
+
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
