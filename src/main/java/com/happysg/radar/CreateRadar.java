@@ -23,19 +23,19 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.LevelAccessor;
 
-import net.minecraftforge.client.ConfigScreenHandler;
+import net.createmod.catnip.config.ui.BaseConfigScreen;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -70,8 +70,6 @@ public class CreateRadar {
         NetworkHandler.register();
         modEventBus.addListener(CreateRadar::init);
         modEventBus.addListener(CreateRadar::clientInit);
-        modEventBus.addListener(CreateRadar::onLoadComplete);
-
 
         MinecraftForge.EVENT_BUS.addListener(MonitorInputHandler::monitorPlayerHovering);
         MinecraftForge.EVENT_BUS.addListener(CreateRadar::clientTick);
@@ -87,7 +85,7 @@ public class CreateRadar {
             CCCompatRegister.registerPeripherals();
     }
 
-    private static void clientTick(TickEvent.ClientTickEvent event) {
+    private static void clientTick(ClientTickEvent.Post event) {
         DataLinkBlockItem.clientTick();
     }
 
@@ -115,15 +113,6 @@ public class CreateRadar {
        //  PonderTagRegistrationHelper<ResourceLocation> tagHelper = PonderTagRegistrationHelper.forMod(CreateRadar.MODID);
      //   ModPonderTags.register(tagHelper);
         BlockEntityRenderers.register(ModBlockEntityTypes.NETWORK_FILTER_BLOCK_ENTITY.get(), NetworkFiltererRenderer::new);
-    }
-
-    public static void onLoadComplete(FMLLoadCompleteEvent event) {
-        ModContainer container = ModList.get()
-                .getModContainerById(CreateRadar.MODID)
-                .orElseThrow(() -> new IllegalStateException("Radar mod container missing on LoadComplete"));
-
-        container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory(RadarConfig::createConfigScreen));
     }
 
     public static void onLoadWorld(LevelEvent.Load event) {
