@@ -49,6 +49,10 @@ repositories {
         name = "Valkyrien Skies Internal"
         url = 'https://maven.valkyrienskies.org'
     }
+
+    maven {
+        url = "https://chocolateminecraft.com/maven"
+    }
 }
 
 base {
@@ -150,7 +154,7 @@ dependencies {
         }
     })
 
-    implementation("net.createmod.ponder:Ponder-NeoForge-$minecraft_version:$ponder_version")
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
 
     implementation("maven.modrinth:create-big-cannons:${cbc_version}")
     implementation("maven.modrinth:rpl:${rpl_version}")
@@ -158,16 +162,16 @@ dependencies {
     compileOnly("maven.modrinth:cbcmodernwarfare:${cbc_mw_version}+mc.1.20.1-forge")
     compileOnly("maven.modrinth:create-big-cannons-advanced-technologies:${cbc_at_version}-1.20.1")
 
-    compileOnly("org.valkyrienskies.core:api:${vs_core_version}")
-    compileOnly("org.valkyrienskies.core:impl:${vs_core_version}")
-    compileOnly("org.valkyrienskies.core:api-game:${vs_core_version}")
-    compileOnly("org.valkyrienskies.core:util:${vs_core_version}")
-    compileOnly("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}")
+    implementation("org.valkyrienskies.core:api:${vs_core_version}") { transitive = false }
+    implementation("org.valkyrienskies.core:impl:${vs_core_version}"){ transitive = false }
+    implementation("org.valkyrienskies.core:util:${vs_core_version}"){ transitive = false }
+    implementation("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {transitive = false}
+
     compileOnly "org.joml:joml:1.10.5"
     compileOnly "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
 
     compileOnly("maven.modrinth:trackwork:1.20.1-${trackwork_version}")
-    compileOnly("maven.modrinth:create-clockwork:1.20.1-${clockwork_version}")
+    compileOnly("maven.modrinth:create-clockwork:1.20.1-forge-${clockwork_version}")
 
     compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cc_tweaked_version}")
     compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}")
