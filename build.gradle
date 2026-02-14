@@ -139,9 +139,9 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
-    implementation "com.simibubi.create:create-${minecraft_version}:${create_version}"
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}")
     runtimeOnly("dev.architectury:architectury-neoforge:${architectury_api_version}")
-    compileOnly "thedarkcolour:kotlinforforge:${forge_kotlin_version}"
+    compileOnly("thedarkcolour:kotlinforforge:${forge_kotlin_version}")
 
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
     runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
