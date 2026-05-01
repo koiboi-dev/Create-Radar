@@ -1,5 +1,8 @@
 package com.happysg.radar.block.datalink;
 
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
+import com.happysg.radar.compat.Mods;
+import com.happysg.radar.compat.vs2.DataLinkVSHelper;
 import com.happysg.radar.registry.AllDataBehaviors;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -11,19 +14,24 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Matrix4dc;
-import org.joml.Vector3d;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 public class DataLinkBlockEntity extends SmartBlockEntity {
+
+    public enum WeaponEndpointType {
+        NONE,
+        YAW,
+        PITCH,
+        FIRING
+    }
 
     protected BlockPos targetOffset = BlockPos.ZERO;
     @Nullable
     private Long linkedShipId = null;
     private BlockPos targetOffsetShip = BlockPos.ZERO;
+    private WeaponEndpointType weaponEndpointType = WeaponEndpointType.NONE;
 
     public DataPeripheral activeSource;
     public DataController activeTarget;
@@ -45,6 +53,7 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        registerWeaponLink();
         updateGatheredData();
     }
 
@@ -100,6 +109,7 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
 
     private void writeGatheredData(CompoundTag tag) {
         tag.put("TargetOffset", NbtUtils.writeBlockPos(targetOffset));
+        tag.putString("WeaponEndpointType", weaponEndpointType.name());
 
         if (linkedShipId != null)
             tag.putLong("LinkedShipId", linkedShipId);
@@ -118,6 +128,7 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
 
         targetOffset = NbtUtils.readBlockPos(tag.getCompound("TargetOffset"));
         ledState = tag.getBoolean("LedState");
+        weaponEndpointType = readWeaponEndpointType(tag);
 
         linkedShipId = tag.contains("LinkedShipId") ? tag.getLong("LinkedShipId") : null;
         targetOffsetShip = tag.contains("TargetOffsetShip")
@@ -137,6 +148,50 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
             sourceConfig = data.copy();
     }
 
+    private static WeaponEndpointType readWeaponEndpointType(CompoundTag tag) {
+        if (!tag.contains("WeaponEndpointType"))
+            return WeaponEndpointType.NONE;
+
+        try {
+            return WeaponEndpointType.valueOf(tag.getString("WeaponEndpointType"));
+        } catch (IllegalArgumentException ignored) {
+            return WeaponEndpointType.NONE;
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        registerWeaponLink();
+    }
+
+    private void registerWeaponLink() {
+        if (level instanceof ServerLevel sl)
+            WeaponNetworkRuntime.register(sl, this);
+    }
+
+    private void unregisterWeaponLink() {
+        if (level instanceof ServerLevel sl)
+            WeaponNetworkRuntime.unregister(sl, worldPosition);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        unregisterWeaponLink();
+        super.onChunkUnloaded();
+    }
+
+    public WeaponEndpointType getWeaponEndpointType() {
+        return weaponEndpointType;
+    }
+
+    public void setWeaponEndpointType(WeaponEndpointType weaponEndpointType) {
+        this.weaponEndpointType = weaponEndpointType == null ? WeaponEndpointType.NONE : weaponEndpointType;
+        registerWeaponLink();
+        notifyUpdate();
+        setChanged();
+    }
+
 
 
     public void target(BlockPos targetPosition) {
@@ -145,41 +200,37 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
             return;
         }
 
-        var ship = org.valkyrienskies.mod.common.VSGameUtilsKt.getShipManagingPos(sl, worldPosition);
-        var targetShip = org.valkyrienskies.mod.common.VSGameUtilsKt.getShipManagingPos(sl, targetPosition);
+        if (Mods.VALKYRIENSKIES.isLoaded()) {
+            DataLinkVSHelper.SameShipTarget sameShipTarget = DataLinkVSHelper.getSameShipTarget(sl, worldPosition, targetPosition);
+            if (sameShipTarget != null) {
+                linkedShipId = sameShipTarget.shipId();
+                targetOffsetShip = sameShipTarget.targetOffsetShip();
 
-        if (ship != null && targetShip != null && ship.getId() == targetShip.getId()) {
-            linkedShipId = ship.getId();
-
-            BlockPos selfShipPos   = toShipBlockPos(ship, worldPosition);
-            BlockPos targetShipPos = toShipBlockPos(ship, targetPosition);
-
-            targetOffsetShip = targetShipPos.subtract(selfShipPos);
-
-            targetOffset = targetPosition.subtract(worldPosition);
-            setChanged();
-            return;
+                targetOffset = targetPosition.subtract(worldPosition);
+                registerWeaponLink();
+                setChanged();
+                return;
+            }
         }
 
         linkedShipId = null;
         targetOffsetShip = BlockPos.ZERO;
         this.targetOffset = targetPosition.subtract(worldPosition);
+        registerWeaponLink();
         setChanged();
     }
 
     public BlockPos getSourcePosition() {
-        if (!(level instanceof ServerLevel sl) || linkedShipId == null)
+        if (!(level instanceof ServerLevel sl) || linkedShipId == null || !Mods.VALKYRIENSKIES.isLoaded())
             return worldPosition.relative(getDirection());
 
-        var ship = org.valkyrienskies.mod.common.VSGameUtilsKt.getShipManagingPos(sl, worldPosition);
-        if (ship == null || ship.getId() != linkedShipId) {
+        BlockPos sourcePos = DataLinkVSHelper.getSourcePosition(sl, linkedShipId, worldPosition, getDirection());
+        if (sourcePos == null) {
             linkedShipId = null;
             return worldPosition.relative(getDirection());
         }
 
-        BlockPos selfShipPos = toShipBlockPos(ship, worldPosition);
-        BlockPos sourceShipPos = selfShipPos.relative(getDirection());
-        return toWorldBlockPos(ship, sourceShipPos);
+        return sourcePos;
     }
 
     public CompoundTag getSourceConfig() {
@@ -197,38 +248,43 @@ public class DataLinkBlockEntity extends SmartBlockEntity {
     }
 
     public BlockPos getTargetPosition() {
-        if (!(level instanceof ServerLevel sl) || linkedShipId == null) {
+        if (!(level instanceof ServerLevel sl) || !Mods.VALKYRIENSKIES.isLoaded()) {
             return worldPosition.offset(targetOffset);
         }
 
-        var ship = org.valkyrienskies.mod.common.VSGameUtilsKt.getShipManagingPos(sl, worldPosition);
-        if (ship == null || ship.getId() != linkedShipId) {
-            // ship changed / disassembled; fall back
+        if (linkedShipId == null) {
+            tryRelinkSameShip(sl);
+        }
+
+        if (linkedShipId == null) {
+            return worldPosition.offset(targetOffset);
+        }
+
+        BlockPos targetPos = DataLinkVSHelper.getTargetPosition(sl, linkedShipId, worldPosition, targetOffsetShip);
+        if (targetPos == null) {
             linkedShipId = null;
+            tryRelinkSameShip(sl);
+            if (linkedShipId != null) {
+                BlockPos relinkedTarget = DataLinkVSHelper.getTargetPosition(sl, linkedShipId, worldPosition, targetOffsetShip);
+                if (relinkedTarget != null) {
+                    return relinkedTarget;
+                }
+            }
             return worldPosition.offset(targetOffset);
         }
 
-        BlockPos selfShipPos = toShipBlockPos(ship, worldPosition);
-        BlockPos targetShipPos = selfShipPos.offset(targetOffsetShip);
-
-        return toWorldBlockPos(ship, targetShipPos);
+        return targetPos;
     }
 
-    private static BlockPos toShipBlockPos(org.valkyrienskies.core.api.ships.ServerShip ship, BlockPos worldPos) {
-        Vector3d v = new Vector3d(worldPos.getX() + 0.5, worldPos.getY() + 0.5, worldPos.getZ() + 0.5);
+    private void tryRelinkSameShip(ServerLevel level) {
+        BlockPos fallbackTarget = worldPosition.offset(targetOffset);
+        DataLinkVSHelper.SameShipTarget sameShipTarget = DataLinkVSHelper.getSameShipTarget(level, worldPosition, fallbackTarget);
+        if (sameShipTarget == null) {
+            return;
+        }
 
-        Matrix4dc worldToShip = ship.getWorldToShip();
-        worldToShip.transformPosition(v);
-
-        return BlockPos.containing(v.x, v.y, v.z);
-    }
-
-    private static BlockPos toWorldBlockPos(org.valkyrienskies.core.api.ships.ServerShip ship, BlockPos shipPos) {
-        Vector3d v = new Vector3d(shipPos.getX() + 0.5, shipPos.getY() + 0.5, shipPos.getZ() + 0.5);
-
-        Matrix4dc shipToWorld = ship.getShipToWorld();
-        shipToWorld.transformPosition(v);
-
-        return BlockPos.containing(v.x, v.y, v.z);
+        linkedShipId = sameShipTarget.shipId();
+        targetOffsetShip = sameShipTarget.targetOffsetShip();
+        setChanged();
     }
 }

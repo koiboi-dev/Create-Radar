@@ -1,7 +1,7 @@
 package com.happysg.radar.registry;
 
 import com.happysg.radar.block.behavior.networks.NetworkData;
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
 import com.happysg.radar.block.controller.id.IDManager;
 import com.happysg.radar.block.controller.pitch.AutoPitchControllerBlockEntity;
 import com.happysg.radar.block.controller.yaw.AutoYawControllerBlockEntity;
@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class  ModCommands {
@@ -272,9 +273,9 @@ public class  ModCommands {
 
     private static int dumpLinks(CommandSourceStack source) {
         ServerLevel level = source.getLevel();
-        WeaponNetworkData data = WeaponNetworkData.get(level);
+        Collection<WeaponNetworkRuntime.WeaponGroupView> groups = WeaponNetworkRuntime.getGroups(level);
 
-        if (data.getGroups().isEmpty()) {
+        if (groups.isEmpty()) {
             source.sendSuccess(
                     () -> Component.literal("No mount link groups found."),
                     false
@@ -287,26 +288,24 @@ public class  ModCommands {
                 false
         );
 
-        for (WeaponNetworkData.Group group : data.getGroups().values()) {
-            WeaponNetworkData.MountKey key = group.key;
-
+        for (WeaponNetworkRuntime.WeaponGroupView group : groups) {
             source.sendSuccess(
                     () -> Component.literal(String.format(
                             "Mount: %s @ %s",
-                            key.dim().location(),
-                            posStr(key.mountPos())
+                            level.dimension().location(),
+                            posStr(group.mountPos())
                     )),
                     false
             );
 
             source.sendSuccess(() ->
-                    Component.literal("  Yaw:    " + optPos(group.yawPos)), false);
+                    Component.literal("  Yaw:    " + optPos(group.yawPos())), false);
             source.sendSuccess(() ->
-                    Component.literal("  Pitch:  " + optPos(group.pitchPos)), false);
+                    Component.literal("  Pitch:  " + optPos(group.pitchPos())), false);
             source.sendSuccess(() ->
-                    Component.literal("  Firing: " + optPos(group.firingPos)), false);
+                    Component.literal("  Firing: " + optPos(group.firingPos())), false);
 
-            if (group.dataLinks.isEmpty()) {
+            if (group.dataLinks().isEmpty()) {
                 source.sendSuccess(
                         () -> Component.literal("  DataLinks: <none>"),
                         false
@@ -316,7 +315,7 @@ public class  ModCommands {
                         () -> Component.literal("  DataLinks:"),
                         false
                 );
-                for (BlockPos p : group.dataLinks) {
+                for (BlockPos p : group.dataLinks()) {
                     source.sendSuccess(
                             () -> Component.literal("    - " + posStr(p)),
                             false
@@ -401,7 +400,6 @@ public class  ModCommands {
         ServerLevel level = source.getLevel();
 
         var n = NetworkData.get(level).validateAllKnownPositions(level, true);
-        var w = WeaponNetworkData.get(level).validateAllKnownPositions(level, true);
 
         source.sendSuccess(() -> Component.literal(
                 "Network scrub complete. " +
@@ -409,9 +407,7 @@ public class  ModCommands {
                         ", endpointsRemoved=" + n.endpointsRemoved() +
                         ", mountsRemoved=" + n.mountsRemoved() +
                         ", dataLinksRemoved=" + n.dataLinksRemoved() +
-                        " | WeaponNetworkData: groupsRemoved=" + w.groupsRemoved() +
-                        ", controllersCleared=" + w.controllersCleared() +
-                        ", dataLinksRemoved=" + w.dataLinksRemoved()
+                        " | WeaponNetworkRuntime: loadedGroups=" + WeaponNetworkRuntime.getGroups(level).size()
         ), true);
 
         return 1;
