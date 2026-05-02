@@ -1,6 +1,6 @@
 package com.happysg.radar.block.controller.yaw;
 
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
 
 import com.happysg.radar.compat.Mods;
 import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
@@ -9,9 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,8 +35,6 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
 
     private double minAngleDeg = 0.0;
     private double maxAngleDeg = 360.0;
-
-    private BlockPos lastKnownPos = BlockPos.ZERO;
 
     @Nullable
     private Mount cachedMount = null;
@@ -74,18 +70,6 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
             }
         }
 
-        if (level.getGameTime() % 40 == 0 && level instanceof ServerLevel serverLevel) {
-            if (!lastKnownPos.equals(worldPosition)) {
-                ResourceKey<Level> dim = serverLevel.dimension();
-                WeaponNetworkData data = WeaponNetworkData.get(serverLevel);
-
-                boolean updated = data.updateWeaponEndpointPosition(dim, lastKnownPos, worldPosition);
-                if (updated) {
-                    lastKnownPos = worldPosition;
-                    setChanged();
-                }
-            }
-        }
     }
 
     public void setTargetAngle(float targetAngle) {
@@ -221,11 +205,11 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
 
     @Nullable
     private BlockPos getMountPos() {
-        if (level == null) {
+        if (!(level instanceof ServerLevel sl)) {
             return null;
         }
 
-        return isUpsideDown() ? worldPosition.below() : worldPosition.above();
+        return WeaponNetworkRuntime.getMountForController(sl, worldPosition);
     }
 
     public double getMinAngleDeg() {
@@ -314,12 +298,6 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
         targetAngle = wrap360(compound.getDouble("TargetAngle"));
         isRunning = compound.getBoolean("IsRunning");
 
-        if (compound.contains("LastKnownPos", Tag.TAG_LONG)) {
-            lastKnownPos = BlockPos.of(compound.getLong("LastKnownPos"));
-        } else {
-            lastKnownPos = worldPosition;
-        }
-
         hasLastCbcYawWritten = false;
         physHandler.read(compound);
     }
@@ -332,7 +310,6 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
         compound.putDouble("MaxAngleDeg", maxAngleDeg);
         compound.putDouble("TargetAngle", wrap360(targetAngle));
         compound.putBoolean("IsRunning", isRunning);
-        compound.putLong("LastKnownPos", lastKnownPos.asLong());
 
         physHandler.write(compound);
     }

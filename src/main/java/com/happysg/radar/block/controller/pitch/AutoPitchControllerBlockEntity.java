@@ -1,7 +1,7 @@
 package com.happysg.radar.block.controller.pitch;
 
 import com.happysg.radar.block.behavior.networks.WeaponFiringControl;
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
 import com.happysg.radar.block.behavior.networks.config.TargetingConfig;
 import com.happysg.radar.block.controller.yaw.AutoYawControllerBlockEntity;
 import com.happysg.radar.block.radar.track.RadarTrack;
@@ -44,11 +44,10 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
     private boolean artillery = false;
     private boolean binoMode = false;
+    private CompoundTag targetingTag = defaultTargetingTag();
 
     @Nullable
     public RadarTrack track;
-
-    private BlockPos lastKnownPos = BlockPos.ZERO;
 
     @Nullable
     private Vec3 lastTargetPos = null;
@@ -79,7 +78,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            if (WeaponNetworkData.get(serverLevel).getWeaponGroupViewFromEndpoint(serverLevel.dimension(), worldPosition) == null) {
+            if (WeaponNetworkRuntime.getWeaponGroupViewFromEndpoint(serverLevel, worldPosition) == null) {
                 return;
             }
         }
@@ -134,7 +133,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
     }
 
     @Nullable
-    private WeaponNetworkData.WeaponGroupView getWeaponGroup() {
+    private WeaponNetworkRuntime.WeaponGroupView getWeaponGroup() {
         if (level == null || level.isClientSide) {
             return null;
         }
@@ -142,8 +141,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
             return null;
         }
 
-        WeaponNetworkData data = WeaponNetworkData.get(sl);
-        return data.getWeaponGroupViewFromEndpoint(sl.dimension(), worldPosition);
+        return WeaponNetworkRuntime.getWeaponGroupViewFromEndpoint(sl, worldPosition);
     }
 
     @Override
@@ -438,11 +436,27 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
     @Nullable
     private BlockPos getMountPos() {
-        if (level == null) {
+        if (!(level instanceof ServerLevel sl)) {
             return null;
         }
 
-        return isFacingCannonMount(level, worldPosition, getBlockState());
+        return WeaponNetworkRuntime.getMountForController(sl, worldPosition);
+    }
+
+    public CompoundTag getTargetingTag() {
+        return targetingTag;
+    }
+
+    public void setTargetingTag(CompoundTag targetingTag) {
+        this.targetingTag = targetingTag == null ? defaultTargetingTag() : targetingTag.copy();
+        setChanged();
+        notifyUpdate();
+    }
+
+    private static CompoundTag defaultTargetingTag() {
+        CompoundTag root = new CompoundTag();
+        root.put("targeting", TargetingConfig.DEFAULT.toTag());
+        return root;
     }
 
     public double getMinAngleDeg() {
@@ -501,14 +515,9 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
         targetAngle = compound.getDouble("TargetAngle");
         isRunning = compound.getBoolean("IsRunning");
 
-        if (compound.contains("LastKnownPos", Tag.TAG_LONG)) {
-            lastKnownPos = BlockPos.of(compound.getLong("LastKnownPos"));
-        } else {
-            lastKnownPos = worldPosition;
-        }
-
         minAngleDeg = compound.contains("MinAngleDeg", Tag.TAG_DOUBLE) ? compound.getDouble("MinAngleDeg") : -90.0;
         maxAngleDeg = compound.contains("MaxAngleDeg", Tag.TAG_DOUBLE) ? compound.getDouble("MaxAngleDeg") : 90.0;
+        targetingTag = compound.contains("Targeting", Tag.TAG_COMPOUND) ? compound.getCompound("Targeting") : defaultTargetingTag();
 
         if (minAngleDeg > maxAngleDeg) {
             double tmp = minAngleDeg;
@@ -524,11 +533,11 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
 
-        compound.putLong("LastKnownPos", lastKnownPos.asLong());
         compound.putDouble("TargetAngle", targetAngle);
         compound.putBoolean("IsRunning", isRunning);
         compound.putDouble("MinAngleDeg", minAngleDeg);
         compound.putDouble("MaxAngleDeg", maxAngleDeg);
+        compound.put("Targeting", targetingTag);
 
         physHandler.write(compound);
     }

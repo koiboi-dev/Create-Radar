@@ -2,7 +2,7 @@ package com.happysg.radar.block.datalink;
 
 import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.behavior.networks.NetworkData;
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
 import com.happysg.radar.block.controller.networkcontroller.NetworkFiltererBlock;
 import com.happysg.radar.block.controller.firing.FireControllerBlock;
 import com.happysg.radar.block.controller.firing.FireControllerBlockEntity;
@@ -148,8 +148,7 @@ public class DataLinkBlockItem extends BlockItem {
 
             BlockPos mountPos = NbtUtils.readBlockPos(tag.getCompound("SelectedMountPos"));
 
-            WeaponNetworkData weaponData = WeaponNetworkData.get(serverLevel);
-            BlockPos existingMount = weaponData.getMountForController(serverLevel.dimension(), clickedPos);
+            BlockPos existingMount = WeaponNetworkRuntime.getMountForController(serverLevel, clickedPos);
             if (existingMount != null) {
                 player.displayClientMessage(
                         Component.translatable(CreateRadar.MODID + ".data_link.controller_already_linked")
@@ -174,17 +173,8 @@ public class DataLinkBlockItem extends BlockItem {
                 return InteractionResult.FAIL;
             }
 
-            // Validate group merge before placement (no mutation)
-            WeaponNetworkData.Group group = weaponData.getOrCreateGroup(serverLevel.dimension(), mountPos);
-
-            BlockPos yawPos = null, pitchPos = null, firePos = null;
-            switch (controllerType) {
-                case YAW -> yawPos = clickedPos;
-                case PITCH -> pitchPos = clickedPos;
-                case FIRING -> firePos = clickedPos;
-            }
-
-            if (!weaponData.canMergeIntoGroup(group, yawPos, pitchPos, firePos)) {
+            DataLinkBlockEntity.WeaponEndpointType endpointType = toWeaponEndpointType(controllerType);
+            if (!WeaponNetworkRuntime.canAttachEndpoint(serverLevel, mountPos, clickedPos, endpointType)) {
                 player.displayClientMessage(
                         Component.translatable(CreateRadar.MODID + ".data_link.duplicate_controller_type")
                                 .withStyle(ChatFormatting.RED),
@@ -220,9 +210,7 @@ public class DataLinkBlockItem extends BlockItem {
                         3);
             }
 
-            // Commit now that placement succeeded
-            boolean merged = weaponData.tryMergeIntoGroup(group, yawPos, pitchPos, firePos);
-            if (!merged) {
+            if (!(serverLevel.getBlockEntity(placedPos) instanceof DataLinkBlockEntity linkBe)) {
                 player.displayClientMessage(
                         Component.translatable(CreateRadar.MODID + ".data_link.commit_failed")
                                 .withStyle(ChatFormatting.RED),
@@ -232,7 +220,9 @@ public class DataLinkBlockItem extends BlockItem {
                 return InteractionResult.SUCCESS;
             }
 
-            weaponData.addDataLinkToGroup(group, placedPos);
+            linkBe.target(mountPos);
+            linkBe.setWeaponEndpointType(endpointType);
+            WeaponNetworkRuntime.register(serverLevel, linkBe);
 
             player.displayClientMessage(
                     Component.translatable("display_link.success").withStyle(ChatFormatting.GREEN),
@@ -311,9 +301,7 @@ public class DataLinkBlockItem extends BlockItem {
                         return InteractionResult.FAIL;
                     }
 
-                    // // Controller MUST already belong to a weapon group for filter networks
-                    WeaponNetworkData weaponData = WeaponNetworkData.get(serverLevel);
-                    weaponMountPos = weaponData.getMountForController(serverLevel.dimension(), clickedPos);
+                    weaponMountPos = WeaponNetworkRuntime.getMountForController(serverLevel, clickedPos);
                     if (weaponMountPos == null) {
                         player.displayClientMessage(
                                 Component.translatable(CreateRadar.MODID + ".data_link.controller_no_weapon_group")
@@ -455,6 +443,14 @@ public class DataLinkBlockItem extends BlockItem {
         return null;
     }
     private enum ControllerType { YAW, PITCH, FIRING }
+
+    private static DataLinkBlockEntity.WeaponEndpointType toWeaponEndpointType(ControllerType type) {
+        return switch (type) {
+            case YAW -> DataLinkBlockEntity.WeaponEndpointType.YAW;
+            case PITCH -> DataLinkBlockEntity.WeaponEndpointType.PITCH;
+            case FIRING -> DataLinkBlockEntity.WeaponEndpointType.FIRING;
+        };
+    }
 
     private static @Nullable ControllerType getControllerType(@Nullable BlockEntity be, BlockState state) {
         if (be instanceof AutoYawControllerBlockEntity) return ControllerType.YAW;

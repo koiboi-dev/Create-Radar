@@ -56,7 +56,7 @@ public class WeaponFiringControl {
     public AutoPitchControllerBlockEntity pitchController;
     public AutoYawControllerBlockEntity yawController;
     public FireControllerBlockEntity fireController;
-    public WeaponNetworkData.WeaponGroupView view;
+    public WeaponNetworkRuntime.WeaponGroupView view;
     public final Level level;
     private RadarTrack activetrack;
     private Entity targetEntity;
@@ -632,7 +632,12 @@ public class WeaponFiringControl {
     public void refreshControllers() {
 
         if (!(level instanceof ServerLevel serverLevel)) return;
-        this.view = WeaponNetworkData.get(serverLevel).getWeaponGroupViewFromEndpoint(level.dimension(), pitchController.getBlockPos());
+        this.view = WeaponNetworkRuntime.getWeaponGroupViewFromEndpoint(serverLevel, pitchController.getBlockPos());
+        if (view == null) {
+            this.yawController = null;
+            this.fireController = null;
+            return;
+        }
         if (view.yawPos() != null && level.getBlockEntity(view.yawPos()) instanceof AutoYawControllerBlockEntity autoyaw) {
             this.yawController = autoyaw;
         } else {
@@ -842,14 +847,15 @@ public class WeaponFiringControl {
                     maxSimDistanceBlocks);
         }
 
-        WeaponNetworkData wnd = WeaponNetworkData.get(serverLevel);
-        WeaponNetworkData.Group grp = (wnd != null && pitchController != null) ? wnd.getGroupForController(serverLevel.dimension(), pitchController.getBlockPos()) : null;
+        WeaponNetworkRuntime.WeaponGroupView grp = pitchController != null
+                ? WeaponNetworkRuntime.getWeaponGroupViewFromEndpoint(serverLevel, pitchController.getBlockPos())
+                : null;
 
-        if (grp != null && !grp.dataLinks.isEmpty()) {
+        if (grp != null && !grp.dataLinks().isEmpty()) {
             Vec3 cannonOrigin = getCannonRayStart();
             double best = 0.0;
 
-            for (BlockPos dlPos : grp.dataLinks) {
+            for (BlockPos dlPos : grp.dataLinks()) {
                 BlockEntity be = serverLevel.getBlockEntity(dlPos);
                 if (!(be instanceof com.happysg.radar.block.datalink.DataLinkBlockEntity dl)) continue;
 
@@ -974,7 +980,7 @@ public class WeaponFiringControl {
         stopFireCannon();
     }
 
-    public void setTarget(Vec3 target, TargetingConfig config, RadarTrack track, WeaponNetworkData.WeaponGroupView view){
+    public void setTarget(Vec3 target, TargetingConfig config, RadarTrack track, WeaponNetworkRuntime.WeaponGroupView view){
         LOGGER.warn("setTarget() → new target={} config={} atTick={}",
                 target, config, level != null ? level.getGameTime() : -1L);
         if (target == null) {
@@ -1007,7 +1013,7 @@ public class WeaponFiringControl {
     }
 
     public void setBinoTarget(@Nullable BlockPos binoTarget, TargetingConfig config,
-                              WeaponNetworkData.WeaponGroupView view, boolean reset) {
+                              WeaponNetworkRuntime.WeaponGroupView view, boolean reset) {
 
         this.view = view;
         this.targetingConfig = config;

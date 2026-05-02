@@ -4,7 +4,7 @@ license = "MIT"
 
 [[mods]] #mandatory
 modId = "create_radar" #mandatory
-version = "0.4" #mandatory
+version = "5.0" #mandatory
 displayName = "Create: Radars" #mandatory
 authors = "Aycer, HappySG, CeoOfGoogle, Kipti, OndatraCZE, Ray(furuochen)" #optional
 

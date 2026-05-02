@@ -1,28 +1,19 @@
 package com.happysg.radar.block.controller.firing;
 
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
-import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RepeaterBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 import java.util.List;
 
 public class FireControllerBlockEntity extends SmartBlockEntity {
-    private BlockPos lastKnownPos = BlockPos.ZERO;
-
-    private static final Logger LOGGER = LogUtils.getLogger();
     boolean powered = false;
 
     // server-time when we last got a target update
@@ -69,23 +60,6 @@ public class FireControllerBlockEntity extends SmartBlockEntity {
             }
         }
 
-        if (!level.isClientSide && now % 40 == 0) {
-            if (level instanceof ServerLevel serverLevel) {
-                if (lastKnownPos.equals(worldPosition))
-                    return;
-
-                ResourceKey<Level> dim = serverLevel.dimension();
-                WeaponNetworkData data = WeaponNetworkData.get(serverLevel);
-                boolean updated = data.updateWeaponEndpointPosition(dim, lastKnownPos, worldPosition);
-
-                // only commit the new position if the network accepted it
-                if (updated) {
-                    lastKnownPos = worldPosition;
-                    LOGGER.debug("Controller moved {} -> {}", lastKnownPos, worldPosition);
-                    setChanged();
-                }
-            }
-        }
     }
 
     public boolean isPowered() {
@@ -176,7 +150,6 @@ public class FireControllerBlockEntity extends SmartBlockEntity {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putBoolean("Powered", powered);
-        tag.putLong("LastKnownPos", lastKnownPos.asLong());
 
         tag.putBoolean("Pulsing", pulsing);
         tag.putLong("NextPulseTick", nextPulseTick);
@@ -195,12 +168,6 @@ public class FireControllerBlockEntity extends SmartBlockEntity {
             }
         }
 
-        if (tag.contains("LastKnownPos", Tag.TAG_LONG)) {
-            lastKnownPos = BlockPos.of(tag.getLong("LastKnownPos"));
-        } else {
-            lastKnownPos = worldPosition;
-        }
-
         pulsing = tag.getBoolean("Pulsing");
         nextPulseTick = tag.contains("NextPulseTick", Tag.TAG_LONG) ? tag.getLong("NextPulseTick") : -1;
         pulseOffTick = tag.contains("PulseOffTick", Tag.TAG_LONG) ? tag.getLong("PulseOffTick") : -1;
@@ -209,11 +176,6 @@ public class FireControllerBlockEntity extends SmartBlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            ResourceKey<Level> dim = serverLevel.dimension();
-            WeaponNetworkData data = WeaponNetworkData.get(serverLevel);
-            data.updateWeaponEndpointPosition(dim, lastKnownPos, worldPosition);
-        }
 
         powered = false;
         pulsing = false;

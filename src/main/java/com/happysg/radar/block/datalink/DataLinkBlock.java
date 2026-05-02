@@ -1,7 +1,7 @@
 package com.happysg.radar.block.datalink;
 
 import com.happysg.radar.block.behavior.networks.NetworkData;
-import com.happysg.radar.block.behavior.networks.WeaponNetworkData;
+import com.happysg.radar.block.behavior.networks.WeaponNetworkRuntime;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.vs2.VSAssemblySuppression;
 import com.happysg.radar.registry.ModBlockEntityTypes;
@@ -95,19 +95,15 @@ public class DataLinkBlock extends WrenchableDirectionalBlock implements IBE<Dat
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
+            WeaponNetworkRuntime.unregister(serverLevel, pos);
             if(Mods.VALKYRIENSKIES.isLoaded() && VSAssemblySuppression.isSuppressed(serverLevel)) return;
             ResourceKey<Level> dim = serverLevel.dimension();
             Direction supportFace = state.getValue(FACING);
 
             NetworkData.get(serverLevel).removeDataLinkAndCleanup(dim, pos, serverLevel);
-            WeaponNetworkData.get(serverLevel).removeDataLinkAndCleanup(dim, pos);
 
             if (state.getValue(LINK_STYLE) == LinkStyle.RADAR) {
                 NetworkData.get(serverLevel).onEndpointRemoved(serverLevel, pos.relative(supportFace.getOpposite()));
-            }
-
-            if (state.getValue(LINK_STYLE) == LinkStyle.CONTROLLER) {
-                WeaponNetworkData.get(serverLevel).removeController(dim, pos.relative(supportFace.getOpposite()));
             }
         }
 

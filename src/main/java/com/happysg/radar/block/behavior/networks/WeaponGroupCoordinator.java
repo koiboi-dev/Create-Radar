@@ -3,9 +3,7 @@ package com.happysg.radar.block.behavior.networks;
 import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.controller.pitch.AutoPitchControllerBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,26 +26,20 @@ public final class WeaponGroupCoordinator {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.level instanceof ServerLevel sl)) return;
 
-        WeaponNetworkData wnd = WeaponNetworkData.get(sl);
-        if (wnd == null) return;
-
         // Ensure each mount group is processed only once per tick
         Set<String> processedMounts = new HashSet<>();
 
-        for (WeaponNetworkData.Group g : wnd.getGroups().values()) {
-            ResourceKey<Level> dim = g.key.dim();
-            if (!dim.equals(sl.dimension())) continue;
-
-            BlockPos mountPos = g.key.mountPos();
-            String mountKey = dim.location() + "|" + mountPos.asLong();
+        for (WeaponNetworkRuntime.WeaponGroupView g : WeaponNetworkRuntime.getGroups(sl)) {
+            BlockPos mountPos = g.mountPos();
+            String mountKey = sl.dimension().location() + "|" + mountPos.asLong();
 
             if (!processedMounts.add(mountKey)) {
                 continue;
             }
 
-            if (g.pitchPos == null) continue;
+            if (g.pitchPos() == null) continue;
 
-            BlockEntity be = sl.getBlockEntity(g.pitchPos);
+            BlockEntity be = sl.getBlockEntity(g.pitchPos());
             if (!(be instanceof AutoPitchControllerBlockEntity pitch)) continue;
 
             // Ensure the control object exists
