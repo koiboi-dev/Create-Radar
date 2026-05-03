@@ -1,98 +1,143 @@
 package com.happysg.radar.networking.packets;
 
+import com.happysg.radar.CreateRadar;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
-import java.util.function.Supplier;
+import net.minecraft.world.item.component.CustomData;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/**
- * Packet to save an array of boolean flags from client -> server and write them to the held item's NBT.
- * Usage: register with your channel, then send from client using NetworkHandler.CHANNEL.sendToServer(new SaveFlagsPacket(...));
- */
-public class BoolListPacket {
-    public static String NBT_KEY = "";
-    private static final int EXPECTED_FLAG_COUNT = 6;
+public record BoolListPacket(boolean mainHand, boolean[] flags, String key) implements CustomPacketPayload {
+    private static final int EXPECTED_FLAG_COUNT = 7;
 
-    public final boolean mainHand;
-    public final boolean[] flags;
+    public static final Type<BoolListPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(CreateRadar.MODID, "bool_list")
+    );
 
-    public BoolListPacket(boolean mainHand, boolean[] flags, String key) {
-        this.mainHand = mainHand;
-        this.flags = flags;
-        NBT_KEY = key;
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, BoolListPacket> STREAM_CODEC =
+            StreamCodec.ofMember(BoolListPacket::encode, BoolListPacket::decode);
 
-    // encoder
-    public static void encode(BoolListPacket pkt, FriendlyByteBuf buf) {
-        buf.writeBoolean(pkt.mainHand);
-        if (pkt.flags == null) {
-            buf.writeInt(0);
-        } else {
-            buf.writeInt(pkt.flags.length);
-            for (boolean b : pkt.flags) buf.writeBoolean(b);
+    private void encode(RegistryFriendlyByteBuf buf) {
+        buf.writeBoolean(mainHand);
+        buf.writeUtf(key);
+        buf.writeInt(flags.length);
+
+        for (boolean flag : flags) {
+            buf.writeBoolean(flag);
         }
     }
 
-    // decoder
-    public static BoolListPacket decode(FriendlyByteBuf buf) {
-        boolean main = buf.readBoolean();
-        int len = buf.readInt();
-        boolean[] f = new boolean[len];
-        for (int i = 0; i < len; i++) f[i] = buf.readBoolean();
-        return new BoolListPacket(main, f, NBT_KEY);
+    private static BoolListPacket decode(RegistryFriendlyByteBuf buf) {
+        boolean mainHand = buf.readBoolean();
+        String key = buf.readUtf();
+
+        int length = buf.readInt();
+        boolean[] flags = new boolean[length];
+
+        for (int i = 0; i < length; i++) {
+            flags[i] = buf.readBoolean();
+        }
+
+        return new BoolListPacket(mainHand, flags, key);
     }
 
-    // handler (executed on server thread)
-    public static void handle(BoolListPacket pkt, Supplier<NetworkEvent.Context> ctxSupplier) {
-        NetworkEvent.Context ctx = ctxSupplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
-            if (player == null) {
-                // Shouldn't happen; packet came from non-player or client-only
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public static void handle(BoolListPacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!(context.player() instanceof ServerPlayer player)) {
                 return;
             }
 
-            // Basic validation
-            if (pkt.flags == null) {;
-                return;
-            }
-            if (pkt.flags.length != EXPECTED_FLAG_COUNT) {
+            if (packet.flags == null || packet.flags.length != EXPECTED_FLAG_COUNT) {
                 return;
             }
 
-            InteractionHand hand = pkt.mainHand ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+            InteractionHand hand = packet.mainHand ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
             ItemStack stack = player.getItemInHand(hand);
-            if (stack == null || stack.isEmpty()) {
 
+            if (stack.isEmpty()) {
                 return;
             }
 
-            try {
-                // Optional: validate item type here to prevent client abuse:
-                // if (stack.getItem() != ModItems.YOUR_GUI_ITEM.get()) { ... reject ... }
+            CompoundTag root = getCustomTag(stack);
+            CompoundTag filters = root.contains("Filters", Tag.TAG_COMPOUND)
+                    ? root.getCompound("Filters")
+                    : new CompoundTag();
 
-                // Convert booleans to byte[] and write to tag
-                byte[] arr = new byte[pkt.flags.length];
-                for (int i = 0; i < pkt.flags.length; i++) arr[i] = (byte) (pkt.flags[i] ? 1 : 0);
+            if ("detectBools".equals(packet.key)) {
+                CompoundTag det = new CompoundTag();
+                det.putBoolean("player", packet.flags[0]);
+                det.putBoolean("vs2", packet.flags[1]);
+                det.putBoolean("contraption", packet.flags[2]);
+                det.putBoolean("mob", packet.flags[3]);
+                det.putBoolean("animal", packet.flags[4]);
+                det.putBoolean("projectile", packet.flags[5]);
+                det.putBoolean("item", packet.flags[6]);
 
-                CompoundTag tag = stack.getOrCreateTag();
-                tag.putByteArray(NBT_KEY, arr);
-                stack.setTag(tag); // set back explicitly to be safe
+                root.putByteArray(packet.key, toByteArray(packet.flags));
+                filters.put("detection", det);
+                root.put("Filters", filters);
 
-                // IMPORTANT: put the (possibly mutated) stack back into the player's hand to avoid copy issues.
-                player.setItemInHand(hand, stack);
+                setCustomTag(stack, root);
+            } else if ("TargetBools".equals(packet.key)) {
+                CompoundTag tgt = new CompoundTag();
+                tgt.putBoolean("player", packet.flags[0]);
+                tgt.putBoolean("contraption", packet.flags[1]);
+                tgt.putBoolean("mob", packet.flags[2]);
+                tgt.putBoolean("animal", packet.flags[3]);
+                tgt.putBoolean("projectile", packet.flags[4]);
+                tgt.putBoolean("lineSight", packet.flags[5]);
+                tgt.putBoolean("autoTarget", packet.flags[6]);
 
-                player.inventoryMenu.broadcastChanges();
+                root.putByteArray(packet.key, toByteArray(packet.flags));
+                filters.put("targeting", tgt);
+                root.put("Filters", filters);
 
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                setCustomTag(stack, root);
             }
-        });
 
-        ctx.setPacketHandled(true);
+            player.setItemInHand(hand, stack);
+            player.inventoryMenu.broadcastChanges();
+        });
+    }
+
+    public static void send(boolean mainHand, boolean[] flags, String key) {
+        PacketDistributor.sendToServer(new BoolListPacket(mainHand, flags, key));
+    }
+
+    private static byte[] toByteArray(boolean[] flags) {
+        byte[] arr = new byte[flags.length];
+
+        for (int i = 0; i < flags.length; i++) {
+            arr[i] = (byte) (flags[i] ? 1 : 0);
+        }
+
+        return arr;
+    }
+
+    private static CompoundTag getCustomTag(ItemStack stack) {
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        return data.copyTag();
+    }
+
+    private static void setCustomTag(ItemStack stack, CompoundTag tag) {
+        if (tag == null || tag.isEmpty()) {
+            stack.remove(DataComponents.CUSTOM_DATA);
+            return;
+        }
+
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag.copy()));
     }
 }

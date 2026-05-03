@@ -54,24 +54,24 @@ public class Beta {
     /** Maximum allowed numerical error. */
     private static final double DEFAULT_EPSILON = 1E-14;
 
-    /** The constant value of ½log 2π. */
+    /** The constant value of Ã‚Â½log 2Ãâ‚¬. */
     private static final double HALF_LOG_TWO_PI = .9189385332046727;
 
     /**
      * <p>
-     * The coefficients of the series expansion of the Δ function. This function
+     * The coefficients of the series expansion of the ÃŽâ€ function. This function
      * is defined as follows
      * </p>
-     * <center>Δ(x) = log Γ(x) - (x - 0.5) log a + a - 0.5 log 2π,</center>
+     * <center>ÃŽâ€(x) = log ÃŽâ€œ(x) - (x - 0.5) log a + a - 0.5 log 2Ãâ‚¬,</center>
      * <p>
      * see equation (23) in Didonato and Morris (1992). The series expansion,
-     * which applies for x ≥ 10, reads
+     * which applies for x Ã¢â€°Â¥ 10, reads
      * </p>
      * <pre>
      *                 14
      *                ====
      *             1  \                2 n
-     *     Δ(x) = ---  >    d  (10 / x)
+     *     ÃŽâ€(x) = ---  >    d  (10 / x)
      *             x  /      n
      *                ====
      *                n = 0
@@ -257,7 +257,7 @@ public class Beta {
 
 
     /**
-     * Returns the value of log Γ(a + b) for 1 ≤ a, b ≤ 2. Based on the
+     * Returns the value of log ÃŽâ€œ(a + b) for 1 Ã¢â€°Â¤ a, b Ã¢â€°Â¤ 2. Based on the
      * <em>NSWC Library of Mathematics Subroutines</em> double precision
      * implementation, {@code DGSMLN}. In {@code BetaTest.testLogGammaSum()},
      * this private method is accessed through reflection.
@@ -289,7 +289,7 @@ public class Beta {
     }
 
     /**
-     * Returns the value of log[Γ(b) / Γ(a + b)] for a ≥ 0 and b ≥ 10. Based on
+     * Returns the value of log[ÃŽâ€œ(b) / ÃŽâ€œ(a + b)] for a Ã¢â€°Â¥ 0 and b Ã¢â€°Â¥ 10. Based on
      * the <em>NSWC Library of Mathematics Subroutines</em> double precision
      * implementation, {@code DLGDIV}. In
      * {@code BetaTest.testLogGammaMinusLogGammaSum()}, this private method is
@@ -331,7 +331,7 @@ public class Beta {
     }
 
     /**
-     * Returns the value of Δ(b) - Δ(a + b), with 0 ≤ a ≤ b and b ≥ 10. Based
+     * Returns the value of ÃŽâ€(b) - ÃŽâ€(a + b), with 0 Ã¢â€°Â¤ a Ã¢â€°Â¤ b and b Ã¢â€°Â¥ 10. Based
      * on equations (26), (27) and (28) in Didonato and Morris (1992).
      *
      * @param a First argument.
@@ -376,7 +376,7 @@ public class Beta {
     }
 
     /**
-     * Returns the value of Δ(p) + Δ(q) - Δ(p + q), with p, q ≥ 10. Based on
+     * Returns the value of ÃŽâ€(p) + ÃŽâ€(q) - ÃŽâ€(p + q), with p, q Ã¢â€°Â¥ 10. Based on
      * the <em>NSWC Library of Mathematics Subroutines</em> double precision
      * implementation, {@code DBCORR}. In
      * {@code BetaTest.testSumDeltaMinusDeltaSum()}, this private method is
@@ -409,7 +409,7 @@ public class Beta {
     }
 
     /**
-     * Returns the value of log B(p, q) for 0 ≤ x ≤ 1 and p, q > 0. Based on the
+     * Returns the value of log B(p, q) for 0 Ã¢â€°Â¤ x Ã¢â€°Â¤ 1 and p, q > 0. Based on the
      * <em>NSWC Library of Mathematics Subroutines</em> implementation,
      * {@code DBETLN}.
      *

@@ -1,11 +1,17 @@
 package com.happysg.radar.compat.cbc;
 import com.happysg.radar.math3.analysis.MultivariateFunction;
+import com.happysg.radar.math3.optim.InitialGuess;
+import com.happysg.radar.math3.optim.MaxEval;
+import com.happysg.radar.math3.optim.PointValuePair;
+import com.happysg.radar.math3.optim.SimpleBounds;
+import com.happysg.radar.math3.optim.nonlinear.scalar.GoalType;
+import com.happysg.radar.math3.optim.nonlinear.scalar.MultiStartMultivariateOptimizer;
+import com.happysg.radar.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import com.happysg.radar.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
+import com.happysg.radar.math3.random.RandomVectorGenerator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import com.happysg.radar.math3.optim.*;
-import com.happysg.radar.math3.optim.nonlinear.scalar.*;
-import com.happysg.radar.math3.optim.nonlinear.scalar.noderiv.*;
-import com.happysg.radar.math3.random.RandomVectorGenerator;
+
 import org.joml.Matrix4dc;
 import org.joml.Vector3f;
 import org.valkyrienskies.core.api.ships.Ship;
@@ -51,7 +57,7 @@ public class VS2TargetingSolver {
 
     }
 
-    private MultivariateFunction createFunction() { //TODO vypočítat čas z ZED a pak použít na vypočet y a x
+    private MultivariateFunction createFunction() { // TODO calculate time from ZED, then use it to calculate y and x
         return point -> {
 
             double theta = point[0];
@@ -62,15 +68,15 @@ public class VS2TargetingSolver {
             Vec3 shipyardFrontOfBarrel = mountPos.add(cos(zetaRad+PI/2)*cos(thetaRad)*l, sin(thetaRad)*l, sin(zetaRad+PI/2)*cos(thetaRad)*l); //+90 degrees cuz used a space offset by that in my math and was too lazy to rewrite it all
 
             Vec3 offset = getCannonMountOffset(level, getBlockPosFromVec3(mountPos));
-            pivotPoint.add(offset);
-            shipyardFrontOfBarrel.add(offset);
+            pivotPoint = pivotPoint.add(offset);
+            shipyardFrontOfBarrel = shipyardFrontOfBarrel.add(offset);
 
             Vec3 frontOfBarrel = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(shipyardFrontOfBarrel)));
             pivotPoint = getVec3FromVector(shipToWorld.transformPosition(getVector3dFromVec3(pivotPoint)));
 
             Vec3 diffVec = targetPos.subtract(frontOfBarrel);
             double dZ = diffVec.z;
-            double dY = diffVec.y+1; //kinda band-aid
+            double dY = diffVec.y;
             double dX = diffVec.x;
 
             Vector3f pivotVector = frontOfBarrel.subtract(pivotPoint).toVector3f();
@@ -120,7 +126,7 @@ public class VS2TargetingSolver {
         double[] upperBounds = {90, 360};
         try {
             optimizer.optimize(
-                    new MaxEval(1000),
+                    new MaxEval(200),
                     new ObjectiveFunction(createFunction()),
                     GoalType.MINIMIZE,
                     new InitialGuess(new double[]{0, 0}),

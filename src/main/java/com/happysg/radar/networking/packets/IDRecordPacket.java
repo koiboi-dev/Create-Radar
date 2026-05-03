@@ -1,39 +1,56 @@
 package com.happysg.radar.networking.packets;
 
+import com.happysg.radar.CreateRadar;
 import com.happysg.radar.block.controller.id.IDManager;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public class IDRecordPacket extends SimplePacketBase {
-    String shipSlug;
-    String secretID;
-    String name;
+public record IDRecordPacket(long shipId, String shipSlug, String secretID, String newSlug) implements CustomPacketPayload {
 
-    public IDRecordPacket(String shipSlug, String secretID, String name) {
-        this.shipSlug = shipSlug;
-        this.secretID = secretID;
-        this.name = name;
+    public IDRecordPacket {
+        shipSlug = shipSlug == null ? "" : shipSlug;
+        secretID = secretID == null ? "" : secretID;
+        newSlug = newSlug == null ? "" : newSlug;
     }
 
-    public IDRecordPacket(FriendlyByteBuf buffer) {
-        this.shipSlug = buffer.readUtf();
-        this.secretID = buffer.readUtf();
-        this.name = buffer.readUtf();
-    }
+    public static final Type<IDRecordPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(CreateRadar.MODID, "id_record")
+    );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, IDRecordPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG,
+            IDRecordPacket::shipId,
+            ByteBufCodecs.STRING_UTF8,
+            IDRecordPacket::shipSlug,
+            ByteBufCodecs.STRING_UTF8,
+            IDRecordPacket::secretID,
+            ByteBufCodecs.STRING_UTF8,
+            IDRecordPacket::newSlug,
+            IDRecordPacket::new
+    );
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeUtf(shipSlug);
-        buffer.writeUtf(secretID);
-        buffer.writeUtf(name);
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
+    public static void handle(IDRecordPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
-            IDManager.addIDRecord(shipSlug, secretID, name);
+            if (!(context.player() instanceof ServerPlayer)) {
+                return;
+            }
+
+            IDManager.addIDRecord(packet.shipId(), packet.secretID(), packet.newSlug());
         });
-        return true;
+    }
+
+    public static void send(long shipId, String shipSlug, String secretID, String newSlug) {
+        PacketDistributor.sendToServer(new IDRecordPacket(shipId, shipSlug, secretID, newSlug));
     }
 }

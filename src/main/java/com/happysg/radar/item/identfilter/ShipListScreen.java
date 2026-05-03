@@ -85,11 +85,11 @@ public class ShipListScreen extends AbstractSimiScreen {
     public void removed() {
         String ID = shipEntry.getValue();
 
-        // 1) Update the client‐side tag immediately:
+        // 1) Update the client-side tag immediately:
         ListNBTHandler.saveStringToHeldItem(minecraft.player, ID);
 
         // 2) Tell the server so it can persist it and sync back properly
-        NetworkHandler.CHANNEL.sendToServer(new SaveListsPacket(ID));
+                SaveListsPacket.send(ID);
     }
 
 }
