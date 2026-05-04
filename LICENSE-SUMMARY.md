@@ -4,7 +4,7 @@ Create Radar is source-available under a custom license.
 
 You may:
 - use the official mod in personal worlds, servers, and modpacks;
-- include official, unmodified copies in modpacks;
+- include official, unmodified copies in modpacks (editing config files is allowed);
 - view, study, and reference the source code;
 - make private modifications for personal use;
 - create addons that require Create Radar as a hard dependency;
