@@ -9,6 +9,9 @@ displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
+[[mixins]]
+config = "create_radar.mixins.json"
+
 [[dependencies.create_radar]]
 modId = "neoforge"
 type = "required"

@@ -80,8 +80,13 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            if (WeaponNetworkData.get(serverLevel).getWeaponGroupViewFromEndpoint(serverLevel.dimension(), worldPosition) == null) {
-                return;
+            if (!lastKnownPos.equals(worldPosition)) {
+                boolean updated = WeaponNetworkData.get(serverLevel)
+                        .updateWeaponEndpointPosition(serverLevel.dimension(), lastKnownPos, worldPosition);
+                if (updated) {
+                    lastKnownPos = worldPosition;
+                    setChanged();
+                }
             }
         }
 

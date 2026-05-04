@@ -226,7 +226,23 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
             return null;
         }
 
-        return isUpsideDown() ? worldPosition.below() : worldPosition.above();
+        BlockPos preferred = isUpsideDown() ? worldPosition.below() : worldPosition.above();
+        BlockPos opposite = isUpsideDown() ? worldPosition.above() : worldPosition.below();
+
+        if (isControllableMount(preferred)) {
+            return preferred;
+        }
+        if (isControllableMount(opposite)) {
+            return opposite;
+        }
+
+        return preferred;
+    }
+
+    private boolean isControllableMount(BlockPos pos) {
+        BlockEntity be = level.getBlockEntity(pos);
+        return (Mods.CREATEBIGCANNONS.isLoaded() && be instanceof CannonMountBlockEntity)
+                || (Mods.VS_CLOCKWORK.isLoaded() && be instanceof PhysBearingBlockEntity);
     }
 
     public double getMinAngleDeg() {
