@@ -17,6 +17,8 @@ import com.happysg.radar.config.RadarConfig;
 import com.happysg.radar.registry.AllDataBehaviors;
 import com.happysg.radar.registry.ModBlocks;
 import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities;
+import net.arsenalists.createenergycannons.content.energymount.EnergyCannonMount;
+import net.arsenalists.createenergycannons.content.energymount.EnergyCannonMountBlockEntity;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -50,9 +52,7 @@ import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlock;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlock;
 import rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlockEntity;
-import riftyboi.cbcmodernwarfare.cannon_control.compact_mount.CompactCannonMountBlockEntity;
-import net.arsenalists.createenergycannons.content.energymount.EnergyCannonMount;
-import net.arsenalists.createenergycannons.content.energymount.EnergyCannonMountBlockEntity;
+
 
 import javax.annotation.Nullable;
 
@@ -473,9 +473,7 @@ private static CompoundTag getLinkTag(ItemStack stack) {
         if(Mods.CREATEENERGYCANNONS.isLoaded()){
             if(be instanceof EnergyCannonMountBlockEntity) return true;
         }
-        if(Mods.CBCMODERNWARFARE.isLoaded()){
-            if(be instanceof CompactCannonMountBlockEntity) return true;
-        }
+
         return false;
     }
     private enum MountType{NORMAL, FIXED, COMPACT, ENERGY}
@@ -485,9 +483,7 @@ private static CompoundTag getLinkTag(ItemStack stack) {
             if(be instanceof EnergyCannonMountBlockEntity) return MountType.ENERGY;
         }
         if(be instanceof CannonMountBlockEntity) return MountType.NORMAL;
-        if(Mods.CBCMODERNWARFARE.isLoaded()){
-            if(be instanceof CompactCannonMountBlockEntity) return MountType.COMPACT;
-        }
+       
         return null;
     }
     private enum ControllerType { YAW, PITCH, FIRING }

@@ -87,6 +87,11 @@ public class MonitorScreen extends Screen {
         return false;
     }
 
+    @Override
+    public void renderBackground(GuiGraphics gg, int mouseX, int mouseY, float partialTicks) {
+        // Keep the world visible behind the radar GUI without Minecraft's screen blur.
+    }
+
     private void recalcUiScale() {
         Minecraft mc = Minecraft.getInstance();
 

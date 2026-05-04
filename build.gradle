@@ -24,7 +24,11 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 configurations {
     sqliteRuntime
 }
-
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 neoForge {
    version = project.neo_version
 
@@ -131,6 +135,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly files ("lib/createenergycannons-forge-0.2.jar")
     compileOnly("org.joml:joml-primitives:1.10.0")
     compileOnly("maven.modrinth:kotlin-for-forge:${forge_kotlin_version}")
     compileOnly("org.valkyrienskies.core:api:${vs_core_version}") { transitive = false }
@@ -138,7 +143,6 @@ dependencies {
     compileOnly("org.valkyrienskies.core:util:${vs_core_version}"){ transitive = false }
     compileOnly("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {transitive = false}
     compileOnly("curse.maven:create-clockwork-807792:7418660")
-    compileOnly ("maven.modrinth:architectury-api:${architectury_api_version}+forge")
     compileOnly("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     localRuntime("com.simibubi.create:create-${minecraft_version}:${create_version}") { transitive = false }
     compileOnly("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
@@ -157,15 +161,18 @@ dependencies {
     }
     localRuntime("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}")
 
-    // CBC
-    implementation("maven.modrinth:create-big-cannons:${cbc_version}") {
-        transitive = false
-    }
+//    // CBC
+//    implementation("maven.modrinth:create-big-cannons:${cbc_version}") {
+//        transitive = false
+//    }
     implementation("maven.modrinth:rpl:${rpl_version}") {
         transitive = false
     }
+    compileOnly files("lib/createenergycannons-0.2+mc1.20.1.jar")
+    compileOnly files("lib/createbigcannons-5.11.3-mc.1.21.1.jar")
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+
     //Simulated
     compileOnly("dev.simulated_team.simulated:simulated-neoforge-${minecraft_version}:${simulated_version}")
     localRuntime("dev.simulated_team.simulated:simulated-neoforge-${minecraft_version}:${simulated_version}")
@@ -187,10 +194,6 @@ dependencies {
     }
 
     jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"))
-}
-mixin {
-    add sourceSets.main, 'createradar.refmap.json'
-    config 'create_radar.mixins.json'
 }
 
 

@@ -3,48 +3,48 @@ loaderVersion = "${loader_version_range}"
 license = "${mod_license}"
 
 [[mods]]
-modId = "${mod_id}"
+modId = "create_radar"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "neoforge"
 type = "required"
 versionRange = "${neo_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "create"
 type = "required"
-versionRange = "${create_version_range}"
+versionRange = "[6.0.10,6.1.0)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "createbigcannons"
-type = "optional"
-versionRange = "${cbc_version_range}"
+type = "required"
+versionRange = "[5.11.2,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "valkyrienskies"
 type = "optional"
 versionRange = "[2.4.7,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.create_radar]]
 modId = "shupapium"
 type = "optional"
 versionRange = "[1.0,2.0)"

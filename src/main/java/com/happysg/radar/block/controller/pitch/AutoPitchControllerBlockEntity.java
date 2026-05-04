@@ -497,7 +497,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.loadAdditional(compound,registries);
+        super.read(compound,registries,clientPacket);
 
         targetAngle = compound.getDouble("TargetAngle");
         isRunning = compound.getBoolean("IsRunning");
@@ -523,7 +523,7 @@ public class AutoPitchControllerBlockEntity extends KineticBlockEntity {
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.loadAdditional(compound,registries);
+        super.write(compound,registries,clientPacket);
 
         compound.putLong("LastKnownPos", lastKnownPos.asLong());
         compound.putDouble("TargetAngle", targetAngle);
