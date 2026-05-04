@@ -13,12 +13,32 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = CreateRadar.MODID)
 public class BinocularOverlay {
 
     private static final ResourceLocation OVERLAY = ModGuiTextures.BINOCULAR_OVERLAY.location;
+    @SubscribeEvent
+    public static void onRenderGuiLayerPre(RenderGuiLayerEvent.Pre event) {
+        if (!VanillaGuiLayers.CAMERA_OVERLAYS.equals(event.getName())) {
+            return;
+        }
 
+        if (isUsingBinoculars()) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static boolean isUsingBinoculars() {
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+
+        return player != null
+                && player.isUsingItem()
+                && player.getUseItem().getItem() instanceof Binoculars;
+    }
     @SubscribeEvent
     public static void onRenderOverlayPost(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();

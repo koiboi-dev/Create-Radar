@@ -71,7 +71,6 @@ public class CreateRadar {
 
 
         RadarConfig.register(container);
-        container.registerExtensionPoint(IConfigScreenFactory.class, RadarConfig::createConfigScreen);
 
         modEventBus.addListener(CreateRadar::init);
         modEventBus.addListener(CreateRadar::clientInit);
@@ -114,6 +113,7 @@ public class CreateRadar {
     public static void clientInit(FMLClientSetupEvent event) {
         PonderIndex.addPlugin(new RadarPonderPlugin());
         NeoForge.EVENT_BUS.addListener(MonitorInputHandler::monitorPlayerHovering);
+
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {

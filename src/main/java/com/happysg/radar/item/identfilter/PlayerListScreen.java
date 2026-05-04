@@ -1,13 +1,13 @@
 package com.happysg.radar.item.identfilter;
 
-import com.happysg.radar.networking.NetworkHandler;
+
 import com.happysg.radar.networking.networkhandlers.ListNBTHandler;
 import com.happysg.radar.networking.packets.SaveListsPacket;
 import com.happysg.radar.registry.ModGuiTextures;
 import com.happysg.radar.utils.screenelements.DynamicIconButton;
 import com.happysg.radar.utils.screenelements.ScrollInputPage;
 import com.happysg.radar.utils.screenelements.SimpleEditBox;
-import com.happysg.radar.utils.screenelements.TooltipIcon;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
