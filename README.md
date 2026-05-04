@@ -34,8 +34,9 @@ them, ensuring faster development and easier gameplay.
 We welcome contributions from the community. If you have any ideas, suggestions, or bug reports, please open an issue or
 submit a pull request on our [GitHub repository](https://github.com/Arsenalists-of-Create/Create-Radar).
 
-## License
+## License 
 
-The code is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Create Radar is released under a custom source-available license.
+See [LICENSE](LICENSE).  
 
 Enjoy playing with Create Radars!
