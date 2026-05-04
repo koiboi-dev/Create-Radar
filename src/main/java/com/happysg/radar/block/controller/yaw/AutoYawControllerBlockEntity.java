@@ -343,7 +343,7 @@ public class AutoYawControllerBlockEntity extends KineticBlockEntity {
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+        super.write(compound, registries, clientPacket);
 
         compound.putDouble("MinAngleDeg", minAngleDeg);
         compound.putDouble("MaxAngleDeg", maxAngleDeg);
