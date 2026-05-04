@@ -11,9 +11,11 @@ import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.cbc.*;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
 import com.happysg.radar.compat.vs2.VS2ShipVelocityTracker;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.SableUtils;
 import com.happysg.radar.config.RadarConfig;
 import com.mojang.logging.LogUtils;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -28,8 +30,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
-import org.valkyrienskies.core.api.ships.Ship;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import rbasamoyai.createbigcannons.cannon_control.cannon_mount.CannonMountBlockEntity;
 import rbasamoyai.createbigcannons.cannon_control.contraption.AbstractMountedCannonContraption;
 import rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity;
@@ -61,17 +61,17 @@ public class WeaponFiringControl {
     public final Level level;
     private RadarTrack activetrack;
     private Entity targetEntity;
-    private Ship targetShip;
+    private SubLevelAccess targetSublevel;
     private BlockPos binoTargetPos;
     private boolean binoMode;
-    private long targetShipId = -1;
+    private UUID targetShipId = null;
     @Nullable private Vec3 lastAimPoint = null;
 
-    private List<List<Double>> cachedVS2Angles = null;
-    private Vec3 cachedVS2AimTarget = null;
-    private long cachedVS2SolveTick = -1;
-    private static final int VS2_SOLVE_INTERVAL = 3;
-    private static final double VS2_AIM_CHANGE_THRESHOLD = 0.3;
+    private List<List<Double>> cachedSableAngles = null;
+    private Vec3 cachedSableAimTarget = null;
+    private long cachedSableSolveTick = -1;
+    private static final int SABLE_SOLVE_INTERVAL = 3;
+    private static final double SABLE_AIM_CHANGE_THRESHOLD = 0.3;
 
     private static final int VIS_REFRESH_TICKS = 3; // recompute every N ticks per entity
     private static final int MAX_POINTS_PER_REFRESH = 10; // ray budget per refresh
@@ -208,13 +208,13 @@ public class WeaponFiringControl {
 
         PitchOrientedContraptionEntity poce = cannonMount.getContraption();
 
-        if (Mods.VALKYRIENSKIES.isLoaded() && VS2Utils.isBlockInShipyard(level, cannonMount.getBlockPos())) {
+        if (Mods.SABLE.isLoaded() && SableUtils.isBlockInShipyard(level, cannonMount.getBlockPos())) {
             if (poce != null) {
                 // toGlobalVector gives shipyard-global coords
                 Vec3 shipyardPos = poce.toGlobalVector(VecHelper.getCenterOf(BlockPos.ZERO), 1.0f);
-                return VS2Utils.getWorldVec(level, shipyardPos);
+                return SableUtils.getWorldVec(level, shipyardPos);
             }
-            return VS2Utils.getWorldVec(level, cannonMount.getBlockPos().getCenter());
+            return SableUtils.getWorldVec(level, cannonMount.getBlockPos().getCenter());
         }
 
         if (poce == null)
@@ -623,8 +623,9 @@ public class WeaponFiringControl {
     public  Entity getEntityByUUID(ServerLevel level, UUID uuid) {
         return level.getEntity(uuid);
     }
-    public Ship getShipByUUID(ServerLevel level, String uuid){
-        return VSGameUtilsKt.getShipObjectWorld(level).getLoadedShips().getById(Long.parseLong(uuid));
+
+    public SubLevelAccess getShipByUUID(ServerLevel level, String uuid){
+        return SubLevelContainer.getContainer(level).getSubLevel(UUID.fromString(uuid));
     }
 
     /**
@@ -670,7 +671,7 @@ public class WeaponFiringControl {
 
         if (binoMode) {
             lastTargetTick = level.getGameTime();
-        } else if (activetrack != null && (targetEntity != null || targetShip != null)) {
+        } else if (activetrack != null && (targetEntity != null || targetSublevel != null)) {
             lastTargetTick = level.getGameTime();
         }
 
@@ -681,22 +682,22 @@ public class WeaponFiringControl {
 
         if (!binoMode && activetrack != null && level instanceof ServerLevel sl) {
 
-            boolean isVsShip = Mods.VALKYRIENSKIES.isLoaded() && "VS2:ship".equals(activetrack.entityType());
+            boolean isSableShip = Mods.SABLE.isLoaded() && "Sable:ship".equals(activetrack.entityType());
 
-            if (isVsShip) {
-                long id;
+            if (isSableShip) {
+                UUID id;
                 try {
-                    id = Long.parseLong(activetrack.id());
-                } catch (NumberFormatException ignored) {
-                    LOGGER.warn("WFC: invalid VS2 ship id={}, stopping fire", activetrack.id());
+                    id = UUID.fromString(activetrack.id());
+                } catch (IllegalArgumentException ignored) {
+                    LOGGER.warn("WFC: invalid Sable ship id={}, stopping fire", activetrack.id());
                     stopFireCannon();
                     return;
                 }
-                if (targetShip == null || targetShipId != id) {
-                    targetShip = getShipByUUID(sl, activetrack.id());
+                if (targetSublevel == null || !id.equals(targetShipId)) {
+                    targetSublevel = getShipByUUID(sl, activetrack.id());
                     targetShipId = id;
-                    if (targetShip == null) {
-                        LOGGER.warn("WFC: VS2 ship id={} not loaded, stopping fire", id);
+                    if (targetSublevel == null) {
+                        LOGGER.warn("WFC: Sable ship id={} not loaded, stopping fire", id);
                         stopFireCannon();
                         return;
                     }
@@ -715,19 +716,19 @@ public class WeaponFiringControl {
                 }
 
                 targetEntity = e;
-                targetShip = null;
+                targetSublevel = null;
             }
         }
 
-        if (!binoMode && activetrack != null && targetEntity == null && targetShip == null) {
+        if (!binoMode && activetrack != null && targetEntity == null && targetSublevel == null) {
             LOGGER.warn("WFC: no resolved target entity/ship, stopping fire (trackId={})", activetrack.id());
             stopFireCannon();
             return;
         }
 
         if (!binoMode) {
-            if (targetShip != null) {
-                target = RadarTrackUtil.getPosition(targetShip);
+            if (targetSublevel != null) {
+                target = RadarTrackUtil.getPosition(targetSublevel);
             } else if (targetEntity != null) {
                 target = targetEntity.position();
             }
@@ -752,50 +753,39 @@ public class WeaponFiringControl {
                 return;
             }
         }
-        if (targetShip != null && !binoMode) {
-            long id;
-            try {
-                id = Long.parseLong(activetrack.id());
-            } catch (NumberFormatException ignored) {
-                LOGGER.warn("WFC: invalid VS2 ship id on recheck={}, stopping fire", activetrack.id());
-                stopFireCannon();
-                return;
-            }
-
-            Ship live = VSGameUtilsKt.getShipObjectWorld(serverLevel).getLoadedShips().getById(id);
+        if (targetSublevel != null && !binoMode) {
+            UUID id = UUID.fromString(activetrack.id());
+            SubLevelAccess live = SubLevelContainer.getContainer(serverLevel).getSubLevel(id);
             if (live == null) {
-                LOGGER.warn("WFC: VS2 ship id={} unloaded mid-tick, stopping fire", id);
+                LOGGER.warn("WFC: Sable ship id={} unloaded mid-tick, stopping fire", id);
                 stopFireCannon();
                 return;
             }
-
-            targetShip = live;
+            targetSublevel = live;
         }
-
-
 
         Vec3 shooterVel;
         Vec3 shooterAccel;
         Vec3 targetVel;
         Vec3 targetAccel;
         boolean lag;
-        if(Mods.VALKYRIENSKIES.isLoaded() && VS2Utils.isBlockInShipyard(level,cannonMount.getBlockPos())){
-            Ship mountship = VSGameUtilsKt.getShipManagingPos(level,cannonMount.getBlockPos());
-            if(mountship ==null){
+        if(Mods.SABLE.isLoaded() && SableUtils.isBlockInShipyard(level, cannonMount.getBlockPos())){
+            SubLevelAccess mountship = dev.ryanhcode.sable.companion.SableCompanion.INSTANCE.getContaining(level, cannonMount.getBlockPos());
+            if(mountship == null){
                 shooterVel = Vec3.ZERO;
                 shooterAccel = Vec3.ZERO;
             } else{
                 shooterVel = VS2ShipVelocityTracker.getShipVelocityPerTick(mountship);
-                shooterAccel = AccelerationTracker.getAccelerationPerTick2(mountship.getId(),shooterVel);
+                shooterAccel = AccelerationTracker.getAccelerationPerTick2(mountship.getUniqueId(), shooterVel);
             }
         }else{
-            shooterVel =Vec3.ZERO;
+            shooterVel = Vec3.ZERO;
             shooterAccel = Vec3.ZERO;
         }
-        if(targetShip != null){
-            target = RadarTrackUtil.getPosition(targetShip);
-            targetVel = VS2ShipVelocityTracker.getShipVelocityPerTick(targetShip);
-            targetAccel =AccelerationTracker.getAccelerationPerTick2(targetShip.getId(),targetVel);
+        if(targetSublevel != null){
+            target = RadarTrackUtil.getPosition(targetSublevel);
+            targetVel = VS2ShipVelocityTracker.getShipVelocityPerTick(targetSublevel);
+            targetAccel = AccelerationTracker.getAccelerationPerTick2(targetSublevel.getUniqueId(), targetVel);
         }else if(!binoMode && targetEntity != null){
             target = targetEntity.position();
             targetVel = VelocityTracker.getEstimatedVelocityPerTick(targetEntity);
@@ -886,20 +876,20 @@ public class WeaponFiringControl {
         Double desiredPitch = null;
         Double desiredYaw = null;
 
-        if (Mods.VALKYRIENSKIES.isLoaded() && PhysicsHandler.isBlockInShipyard(level, cannonMount.getBlockPos())) {
+        if (Mods.SABLE.isLoaded() && PhysicsHandler.isBlockInPlotyard(level, cannonMount.getBlockPos())) {
             long now = level.getGameTime();
-            boolean needSolve = cachedVS2Angles == null
-                    || (now - cachedVS2SolveTick) >= VS2_SOLVE_INTERVAL
-                    || cachedVS2AimTarget == null
-                    || cachedVS2AimTarget.distanceToSqr(offsetAim) > VS2_AIM_CHANGE_THRESHOLD * VS2_AIM_CHANGE_THRESHOLD;
+            boolean needSolve = cachedSableAngles == null
+                    || (now - cachedSableSolveTick) >= SABLE_SOLVE_INTERVAL
+                    || cachedSableAimTarget == null
+                    || cachedSableAimTarget.distanceToSqr(offsetAim) > SABLE_AIM_CHANGE_THRESHOLD * SABLE_AIM_CHANGE_THRESHOLD;
 
             if (needSolve) {
-                cachedVS2Angles = VS2CannonTargeting.calculatePitchAndYawVS2(cannonMount, offsetAim, serverLevel);
-                cachedVS2AimTarget = offsetAim;
-                cachedVS2SolveTick = now;
+                cachedSableAngles = VS2CannonTargeting.calculatePitchAndYawVS2(cannonMount, offsetAim, serverLevel);
+                cachedSableAimTarget = offsetAim;
+                cachedSableSolveTick = now;
             }
 
-            List<List<Double>> angles = cachedVS2Angles;
+            List<List<Double>> angles = cachedSableAngles;
             if (angles != null && !angles.isEmpty() && !angles.get(0).isEmpty()) {
                 desiredPitch = angles.get(0).get(0);
                 desiredYaw   = angles.get(0).get(1);
@@ -962,15 +952,15 @@ public class WeaponFiringControl {
         this.target =null;
         this.activetrack =null;
         this.targetEntity = null;
-        this.targetShip   = null;
-        this.targetShipId = -1;
+        this.targetSublevel = null;
+        this.targetShipId = null;
 
         lastAimPoint = null;
         lastOffsetAim = null;
         aimStableTicks = 0;
-        cachedVS2Angles = null;
-        cachedVS2AimTarget = null;
-        cachedVS2SolveTick = -1;
+        cachedSableAngles = null;
+        cachedSableAimTarget = null;
+        cachedSableSolveTick = -1;
 
         stopFireCannon();
     }
@@ -982,8 +972,8 @@ public class WeaponFiringControl {
             this.target = null;
             this.activetrack = null;
             this.targetEntity = null;
-            this.targetShip = null;
-            this.targetShipId = -1;
+            this.targetSublevel = null;
+            this.targetShipId = null;
 
             lastAimPoint = null;
             lastOffsetAim = null;
@@ -1004,7 +994,7 @@ public class WeaponFiringControl {
         this.view = view;
         this.activetrack = track;
         this.targetEntity = null;
-        this.targetShip = null;
+        this.targetSublevel = null;
     }
 
     public void setBinoTarget(@Nullable BlockPos binoTarget, TargetingConfig config,

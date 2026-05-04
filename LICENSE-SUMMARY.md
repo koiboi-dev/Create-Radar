@@ -8,7 +8,7 @@ You may:
 - view, study, and reference the source code;
 - make private modifications for personal use;
 - create addons that require Create Radar as a hard dependency;
-- create optional compatibility/support mods.
+- create optional mods that have compatibility/support for the official mod.
 
 You may not:
 - reupload or redistribute Create Radar except as allowed by the license;

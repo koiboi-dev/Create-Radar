@@ -136,7 +136,7 @@ public class WeaponNetworkData extends SavedData {
 
     public static WeaponNetworkData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
-                new SavedData.Factory<>(
+                new Factory<>(
                         WeaponNetworkData::new,
                         WeaponNetworkData::load,
                         null

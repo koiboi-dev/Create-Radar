@@ -8,13 +8,15 @@ import com.happysg.radar.block.radar.track.RadarTrackUtil;
 import com.happysg.radar.block.radar.track.TrackCategory;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.SableUtils;
 import com.happysg.radar.config.RadarConfig;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.happysg.radar.block.behavior.networks.config.DetectionConfig;
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -26,9 +28,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.valkyrienskies.core.api.ships.Ship;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
@@ -46,7 +46,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     Vec3 scanPos = Vec3.ZERO;
 
     private final Set<Entity> scannedEntities = new HashSet<>();
-    private final Set<Ship> scannedShips = new HashSet<>();
+    private final Set<SubLevelAccess> scannedShips = new HashSet<>();
     private final Set<Projectile> scannedProjectiles = new HashSet<>();
     private final HashMap<String, RadarTrack> radarTracks = new HashMap<>();
 
@@ -59,7 +59,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         if (cfg == null) cfg = DetectionConfig.DEFAULT;
         setScanFlags(
                 cfg.player(),
-                cfg.vs2(),
+                cfg.sable(),
                 cfg.contraption(),
                 cfg.mob(),
                 cfg.animal(),
@@ -70,7 +70,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
 
 
     private boolean scanPlayers = true;
-    private boolean scanVS2 = true;
+    private boolean scanSable = true;
     private boolean scanContraptions = true;
     private boolean scanMobs = true;
     private boolean scanAnimals = true;
@@ -80,7 +80,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
     private boolean allowCategory(TrackCategory c) {
         return switch (c) {
             case PLAYER -> scanPlayers;
-            case VS2 -> scanVS2;
+            case SABLE -> scanSable;
             case CONTRAPTION -> scanContraptions;
             case PROJECTILE -> scanProjectiles;
             case ITEM -> scanItems;
@@ -96,11 +96,11 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         radarTracks.entrySet().removeIf(e -> !allowCategory(e.getValue().trackCategory()));
     }
 
-    public void setScanFlags(boolean players, boolean vs2, boolean contraptions, boolean mobs, boolean animals, boolean projectiles, boolean items) {
-        boolean changed = players != scanPlayers || vs2 != scanVS2 || contraptions != scanContraptions || mobs != scanMobs || animals != scanAnimals || projectiles != scanProjectiles || items != scanItems;
+    public void setScanFlags(boolean players, boolean sable, boolean contraptions, boolean mobs, boolean animals, boolean projectiles, boolean items) {
+        boolean changed = players != scanPlayers || sable != scanSable || contraptions != scanContraptions || mobs != scanMobs || animals != scanAnimals || projectiles != scanProjectiles || items != scanItems;
 
         this.scanPlayers = players;
-        this.scanVS2 = vs2;
+        this.scanSable = sable;
         this.scanContraptions = contraptions;
         this.scanMobs = mobs;
         this.scanAnimals = animals;
@@ -127,8 +127,8 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
             scannedProjectiles.clear();
 
             scanForEntityTracks();
-            if (Mods.VALKYRIENSKIES.isLoaded() && scanVS2)
-                scanForVSTracks();
+            if (Mods.SABLE.isLoaded() && scanSable)
+                scanForSableTracks();
         }
     }
 
@@ -154,13 +154,13 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
             }
         }
 
-        for (Ship ship : scannedShips) {
+        for (SubLevelAccess ship : scannedShips) {
             Vec3 pos = RadarTrackUtil.getPosition(ship);
             if (isInFovAndRange(pos)) {
 
-                long key = ship.getId();
+                UUID key = ship.getUniqueId();
 
-                radarTracks.compute(ship.getSlug(), (id, track) -> {
+                radarTracks.compute(ship.getUniqueId().toString(), (id, track) -> {
                     if (track == null) return RadarTrackUtil.getRadarTrack(ship, level);
                     track.updateRadarTrack(ship, level);
                     return track;
@@ -198,15 +198,14 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
                 radarTracks.remove(entity.getUUID().toString());
         }
 
-        // vs2 ships
-        if (Mods.VALKYRIENSKIES.isLoaded()) {
-            assert blockEntity.getLevel() != null;
-
-            var shipWorld = org.valkyrienskies.mod.common.VSGameUtilsKt.getShipObjectWorld(blockEntity.getLevel());
-            // i remove ship tracks if the ship id no longer resolves (unloaded/despawned)
+        // sable ships
+        if (Mods.SABLE.isLoaded()) {
+            Level level = blockEntity.getLevel();
             scannedShips.removeIf(ship -> {
-                boolean dead = shipWorld == null || shipWorld.getLoadedShips().getById(ship.getId()) == null;
-                if (dead) radarTracks.remove(String.valueOf(ship.getId()));
+                var center = ship.boundingBox().center();
+                SubLevelAccess current = SableCompanion.INSTANCE.getContaining(level, new Vec3(center.x(), center.y(), center.z()));
+                boolean dead = current == null || !ship.getUniqueId().equals(current.getUniqueId());
+                if (dead) radarTracks.remove(ship.getUniqueId().toString());
                 return dead;
             });
         }
@@ -263,12 +262,12 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         }
     }
 
-    private void scanForVSTracks() {
-        if (blockEntity.getLevel() == null || !Mods.VALKYRIENSKIES.isLoaded()) return;
+    private void scanForSableTracks() {
+        if (blockEntity.getLevel() == null || !Mods.SABLE.isLoaded()) return;
         splitAABB(getRadarAABB(), 256).forEach(aabb ->
-                VS2Utils.getLoadedShips(blockEntity.getLevel(), aabb).forEach(scannedShips::add));
+                SableUtils.getLoadedShips(blockEntity.getLevel(), aabb).forEach(scannedShips::add));
 
-        scannedShips.remove(VS2Utils.getShipManagingPos(blockEntity));
+        scannedShips.remove(SableUtils.getShipManagingPos(blockEntity));
     }
     private AABB getRadarAABB() {
         BlockPos radarPos = PhysicsHandler.getWorldPos(blockEntity);

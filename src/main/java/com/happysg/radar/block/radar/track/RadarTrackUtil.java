@@ -1,38 +1,42 @@
 package com.happysg.radar.block.radar.track;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
-import org.valkyrienskies.core.api.ships.Ship;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 public class RadarTrackUtil {
 
-    public static RadarTrack getRadarTrack(Ship ship, Level level) {
-        return new RadarTrack(String.valueOf(ship.getId()), getPosition(ship), getVelocity(ship), level.getGameTime(),
-                TrackCategory.VS2, "VS2:ship", getShipSize(ship));
+    public static RadarTrack getRadarTrack(SubLevelAccess subLevel, Level level) {
+        return new RadarTrack(String.valueOf(subLevel.getUniqueId()), getPosition(subLevel), getVelocity(subLevel, level), level.getGameTime(),
+                TrackCategory.SABLE, "Sable:subLevel", getShipSize(subLevel));
     }
 
-    public static int getShipSize(Ship ship){
-        if(ship.getShipAABB()!= null){
-            return ship.getShipAABB().maxY();
+    public static float getShipSize(SubLevelAccess subLevel){
+        if(subLevel.boundingBox() != null){
+            return (float) subLevel.boundingBox().maxY();
         }else{
             return 1;
         }
     }
-    public static Vec3 getVelocity(Ship ship) {
-        return new Vec3(ship.getVelocity().x(), ship.getVelocity().y(), ship.getVelocity().z());
+    public static Vec3 getVelocity(SubLevelAccess subLevel, Level level) {
+        //Probally not the best to cast like this.
+        Vector3f vec3d = new Vector3f((Vector3fc) SableCompanion.INSTANCE.getVelocity(level, subLevel.boundingBox().center()));
+        return new Vec3(vec3d);
     }
 
-    public static Vec3 getPosition(Ship serverShip) {
-        Vector3d vecD = serverShip.getWorldAABB().center(new Vector3d());
+    public static Vec3 getPosition(SubLevelAccess serverShip) {
+        Vector3d vecD = serverShip.boundingBox().center(new Vector3d());
         return new Vec3(vecD.x, vecD.y, vecD.z);
     }
 

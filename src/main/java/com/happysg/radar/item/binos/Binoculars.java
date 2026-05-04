@@ -39,7 +39,7 @@ public class Binoculars extends SpyglassItem {
 
     @Override
     public void appendHoverText(ItemStack stack,
-                                Item.TooltipContext context,
+                                TooltipContext context,
                                 List<Component> tooltipComponents,
                                 TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);

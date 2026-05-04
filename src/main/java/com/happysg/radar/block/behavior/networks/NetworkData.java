@@ -91,7 +91,7 @@ public class NetworkData extends SavedData {
 
     public static NetworkData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
-                new SavedData.Factory<>(
+                new Factory<>(
                         NetworkData::new,
                         NetworkData::load,
                         null

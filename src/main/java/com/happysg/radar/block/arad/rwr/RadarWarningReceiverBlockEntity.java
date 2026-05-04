@@ -2,21 +2,22 @@ package com.happysg.radar.block.arad.rwr;
 
 import com.happysg.radar.block.arad.aradnetworks.RadarContactRegistry;
 import com.happysg.radar.compat.Mods;
-import com.happysg.radar.compat.vs2.VS2Utils;
+import com.happysg.radar.compat.vs2.SableUtils;
 import com.happysg.radar.registry.ModSounds;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.valkyrienskies.core.api.ships.Ship;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.happysg.radar.block.arad.rwr.RadarWarningReceiverBlock.ON_SHIP;
 
@@ -57,14 +58,15 @@ public class RadarWarningReceiverBlockEntity extends SmartBlockEntity {
         if (inRangeCooldownTicks > 0) inRangeCooldownTicks--;
         if (lockBeepTicks > 0) lockBeepTicks--;
 
-        Ship ship = VSGameUtilsKt.getShipManagingPos(level, worldPosition);
+        // ship = VSGameUtilsKt.getShipManagingPos(level, worldPosition);\
+        SubLevelAccess ship = SableCompanion.INSTANCE.getContaining(level, worldPosition);
         if (ship == null) {
             resetSoundState();
             return;
         }
 
-        long key = ship.getId();
-        if(!Mods.VALKYRIENSKIES.isLoaded()) return;
+        UUID key = ship.getUniqueId();
+        if(!Mods.SABLE.isLoaded()) return;
         boolean locked = RadarContactRegistry.isLocked(sl, key);
         if (locked) LogUtils.getLogger().warn("locked");
         boolean inRange = RadarContactRegistry.isInRange(sl, key);
@@ -75,7 +77,7 @@ public class RadarWarningReceiverBlockEntity extends SmartBlockEntity {
             if (lockBeepTicks == 0) {
                 sl.playSound(
                         null,               // null = all nearby players hear it
-                        VS2Utils.getWorldPos(this),
+                        SableUtils.getWorldPos(this),
                         ModSounds.RWR_LOCK.get(),
                         SoundSource.BLOCKS,
                         1.0f,
@@ -98,7 +100,7 @@ public class RadarWarningReceiverBlockEntity extends SmartBlockEntity {
             if (firstSpotted || inRangeCooldownTicks == 0) {
                 sl.playSound(
                         null,               // null = all nearby players hear it
-                        VS2Utils.getWorldPos(this),
+                        SableUtils.getWorldPos(this),
                         ModSounds.RWR_IN_RANGE.get(),
                         SoundSource.BLOCKS,
                         1.0f,
@@ -122,7 +124,7 @@ public class RadarWarningReceiverBlockEntity extends SmartBlockEntity {
     }
 
     private static boolean computeOnShip(Level level, BlockPos pos) {
-        return VSGameUtilsKt.getShipManagingPos(level, pos) != null;
+        return SableCompanion.INSTANCE.getContaining(level, pos) != null;
     }
 
     private static void refreshOnShip(Level level, BlockPos pos) {
