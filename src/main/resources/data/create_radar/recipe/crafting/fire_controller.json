@@ -1,0 +1,17 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": { "item": "create:brass_casing" },
+    "C": { "item": "minecraft:comparator" },
+    "P": { "item": "create:precision_mechanism" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "pattern": [
+    " R ",
+    "CPC",
+    " B "
+  ],
+  "result": { "id": "create_radar:fire_controller" },
+  "show_notification": true
+}

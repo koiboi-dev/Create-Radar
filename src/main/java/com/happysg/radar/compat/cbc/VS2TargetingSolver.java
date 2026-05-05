@@ -9,11 +9,13 @@ import com.happysg.radar.math3.optim.nonlinear.scalar.MultiStartMultivariateOpti
 import com.happysg.radar.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import com.happysg.radar.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import com.happysg.radar.math3.random.RandomVectorGenerator;
+import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -22,6 +24,8 @@ import static com.happysg.radar.compat.vs2.SableUtils.*;
 import static java.lang.Math.*;
 
 public class VS2TargetingSolver {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private final double u;
     private final double drag;
     private final Vec3 targetPos;
@@ -35,6 +39,11 @@ public class VS2TargetingSolver {
     private final SubLevelAccess ship;
 
     private static final double TOLERANCE = 1e-3;
+    private static final double MAX_MISS_DISTANCE_BLOCKS = 0.5;
+    private static final double MIN_FLIGHT_TICKS = 0.05;
+    private static final double MAX_FLIGHT_TICKS = 800.0;
+    private static final double NEAR_VERTICAL_PITCH_DEG = 85.0;
+    private static final double NEAR_VERTICAL_HORIZONTAL_BLOCKS = 2.0;
 
 
     // Constructor to set up the known values
@@ -54,11 +63,12 @@ public class VS2TargetingSolver {
 
     }
 
-    private MultivariateFunction createFunction() { // TODO calculate time from ZED, then use it to calculate y and x
+    private MultivariateFunction createFunction() {
         return point -> {
 
             double theta = point[0];
             double zeta = point[1];
+            double time = max(MIN_FLIGHT_TICKS, point[2]);
             double thetaRad = toRadians(theta);
             double zetaRad = toRadians(zeta);
             Vec3 pivotPoint = mountPos;
@@ -71,11 +81,6 @@ public class VS2TargetingSolver {
             Vec3 frontOfBarrel = getVec3FromVector(ship.logicalPose().transformPosition(getVector3dFromVec3(shipyardFrontOfBarrel)));
             pivotPoint = getVec3FromVector(ship.logicalPose().transformPosition(getVector3dFromVec3(pivotPoint)));
 
-            Vec3 diffVec = targetPos.subtract(frontOfBarrel);
-            double dZ = diffVec.z;
-            double dY = diffVec.y;
-            double dX = diffVec.x;
-
             Vector3f pivotVector = frontOfBarrel.subtract(pivotPoint).toVector3f();
             pivotVector = pivotVector.normalize();
             double pitch = asin(pivotVector.y);
@@ -86,17 +91,56 @@ public class VS2TargetingSolver {
             thetaRad = Double.isNaN(pitch) ? 0 : pitch;
             zetaRad = Double.isNaN(yaw) ? 0 : yaw;
 
-            double log = 1-(drag*dZ)/(u*cos(thetaRad)*sin(zetaRad));
-            if(log <= 0) return Double.POSITIVE_INFINITY;
-            double time = log(log)/-drag;
-            if(time <= 0) return Double.POSITIVE_INFINITY;
-            double dragDecay = (1-exp(-drag*time));
-            double newX = u*cos(thetaRad)*cos(zetaRad)*dragDecay/drag;
-
-            double newY = (drag*u*sin(thetaRad)+g)*dragDecay/(drag*drag) - g*time/drag;
-            return abs(dY-newY)+abs(dX-newX);
+            Vec3 projectilePos = frontOfBarrel.add(displacement(thetaRad, zetaRad, time));
+            return projectilePos.distanceToSqr(targetPos);
         };
     }
+
+    private Vec3 displacement(double thetaRad, double zetaRad, double time) {
+        double vx = u * cos(thetaRad) * cos(zetaRad);
+        double vy = u * sin(thetaRad);
+        double vz = u * cos(thetaRad) * sin(zetaRad);
+
+        if (abs(drag) < 1.0e-9) {
+            return new Vec3(
+                    vx * time,
+                    vy * time - 0.5 * g * time * time,
+                    vz * time
+            );
+        }
+
+        double decay = 1.0 - exp(-drag * time);
+        return new Vec3(
+                vx * decay / drag,
+                ((drag * vy + g) * decay) / (drag * drag) - g * time / drag,
+                vz * decay / drag
+        );
+    }
+
+    private double initialFlightGuessTicks() {
+        Vec3 front = getVec3FromVector(ship.logicalPose().transformPosition(getVector3dFromVec3(mountPos)));
+        double distance = max(1.0, front.distanceTo(targetPos));
+        return min(MAX_FLIGHT_TICKS, max(MIN_FLIGHT_TICKS, distance / max(1.0e-6, u)));
+    }
+
+    private double[] initialAngleGuess() {
+        Vec3 localTarget = getVec3FromVector(ship.logicalPose().transformPositionInverse(getVector3dFromVec3(targetPos)));
+        Vec3 localDiff = localTarget.subtract(mountPos);
+        double horizontal = hypot(localDiff.x, localDiff.z);
+        double theta = toDegrees(atan2(localDiff.y, max(1.0e-6, horizontal)));
+        double zeta = toDegrees(atan2(localDiff.z, localDiff.x)) + 270.0;
+        zeta %= 360.0;
+        if (zeta < 0.0) {
+            zeta += 360.0;
+        }
+        return new double[]{theta, zeta};
+    }
+
+    private double targetHorizontalDistanceFromMuzzle() {
+        Vec3 front = getVec3FromVector(ship.logicalPose().transformPosition(getVector3dFromVec3(mountPos)));
+        return hypot(targetPos.x - front.x, targetPos.z - front.z);
+    }
+
     RandomVectorGenerator randomVectorGenerator = new RandomVectorGenerator() {
         private final Random random = new Random();
         @Override
@@ -106,43 +150,51 @@ public class VS2TargetingSolver {
             double thetaUpper = 90;
             double zetaLower = 0;
             double zetaUpper = 360;
+            double timeLower = MIN_FLIGHT_TICKS;
+            double timeUpper = MAX_FLIGHT_TICKS;
             double theta = thetaLower + random.nextDouble() * (thetaUpper - thetaLower);
             double zeta = zetaLower + random.nextDouble() * (zetaUpper - zetaLower);
-            return new double[]{theta, zeta};
+            double time = timeLower + random.nextDouble() * (timeUpper - timeLower);
+            return new double[]{theta, zeta, time};
         }
     };
 
     public List<List<Double>> solveThetaZeta() {
-        int numStarts = 2; // Number of starting points for multi-start optimization.
+        int numStarts = 8; // Number of starting points for multi-start optimization.
         MultiStartMultivariateOptimizer optimizer = new MultiStartMultivariateOptimizer(
-                new BOBYQAOptimizer(5), numStarts, randomVectorGenerator
+                new BOBYQAOptimizer(7), numStarts, randomVectorGenerator
         );
 
-        // Define search bounds (theta in [-90, 90] and zeta in [0, 360] degrees).
-        double[] lowerBounds = {-90, 0};
-        double[] upperBounds = {90, 360};
+        // Define search bounds (theta in [-90, 90], zeta in [0, 360], time in ticks).
+        double[] lowerBounds = {-90, 0, MIN_FLIGHT_TICKS};
+        double[] upperBounds = {90, 360, MAX_FLIGHT_TICKS};
         try {
+            double[] angleGuess = initialAngleGuess();
             optimizer.optimize(
-                    new MaxEval(200),
+                    new MaxEval(1200),
                     new ObjectiveFunction(createFunction()),
                     GoalType.MINIMIZE,
-                    new InitialGuess(new double[]{0, 0}),
+                    new InitialGuess(new double[]{angleGuess[0], angleGuess[1], initialFlightGuessTicks()}),
                     new SimpleBounds(lowerBounds, upperBounds)
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.debug("Sable cannon targeting solve failed", e);
         }
 
         PointValuePair[] optima = optimizer.getOptima();
         List<List<Double>> results = new ArrayList<>();
         Set<String> uniqueSolutions = new HashSet<>();
+        double horizontalToTarget = targetHorizontalDistanceFromMuzzle();
         for (PointValuePair opt : optima) {
             if (opt == null) continue;
             double error = opt.getValue();
-            if (error < TOLERANCE) {
+            if (error < MAX_MISS_DISTANCE_BLOCKS * MAX_MISS_DISTANCE_BLOCKS) {
                 double[] point = opt.getPoint();
                 double theta = point[0];
                 double zeta = point[1];
+                if (abs(theta) >= NEAR_VERTICAL_PITCH_DEG && horizontalToTarget > NEAR_VERTICAL_HORIZONTAL_BLOCKS) {
+                    continue;
+                }
                 String key = String.format("%d_%d", (int) Math.floor(theta), (int) Math.floor(zeta));
                 if (!uniqueSolutions.contains(key)) {
                     uniqueSolutions.add(key);
@@ -153,6 +205,7 @@ public class VS2TargetingSolver {
                 }
             }
         }
+        results.sort(Comparator.comparingDouble(pair -> abs(pair.get(0))));
         return results;
     }
 }

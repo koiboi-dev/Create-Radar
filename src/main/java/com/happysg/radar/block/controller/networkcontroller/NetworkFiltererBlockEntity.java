@@ -678,7 +678,9 @@ public class NetworkFiltererBlockEntity extends BlockEntity {
         if (det == null) return DetectionConfig.DEFAULT;
 
         boolean player     = det.contains("player", Tag.TAG_BYTE) ? det.getBoolean("player") : DetectionConfig.DEFAULT.player();
-        boolean sable      = det.contains("sable", Tag.TAG_BYTE) ? det.getBoolean("sable") : DetectionConfig.DEFAULT.sable();
+        boolean sable      = det.contains("sable", Tag.TAG_BYTE)
+                ? det.getBoolean("sable")
+                : (det.contains("vs2", Tag.TAG_BYTE) ? det.getBoolean("vs2") : DetectionConfig.DEFAULT.sable());
         boolean contraption= det.contains("contraption", Tag.TAG_BYTE) ? det.getBoolean("contraption") : DetectionConfig.DEFAULT.contraption();
         boolean mob        = det.contains("mob", Tag.TAG_BYTE) ? det.getBoolean("mob") : DetectionConfig.DEFAULT.mob();
         boolean projectile = det.contains("projectile", Tag.TAG_BYTE) ? det.getBoolean("projectile") : DetectionConfig.DEFAULT.projectile();

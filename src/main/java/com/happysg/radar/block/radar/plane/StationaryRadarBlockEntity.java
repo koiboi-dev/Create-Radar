@@ -5,7 +5,6 @@ import com.happysg.radar.block.radar.behavior.RadarScanningBlockBehavior;
 import com.happysg.radar.block.radar.track.RadarTrack;
 import com.happysg.radar.compat.Mods;
 import com.happysg.radar.compat.vs2.PhysicsHandler;
-import com.happysg.radar.compat.vs2.SableUtils;
 import com.happysg.radar.config.RadarConfig;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -45,12 +44,14 @@ public class StationaryRadarBlockEntity extends SmartBlockEntity implements IRad
     @Override
     public void tick() {
         super.tick();
-        if (!Mods.SABLE.isLoaded() && !SableUtils.isBlockInShipyard(level,worldPosition)){
-            scanningBehavior.setRunning(false);
+        if (level == null) {
             return;
-        }else if(!isRunning() && SableUtils.isBlockInShipyard(level,worldPosition))
-            scanningBehavior.setRunning(true);
-        Direction facing = getBlockState().getValue(StationaryRadarBlock.FACING).getOpposite();
+        }
+
+        scanningBehavior.setRunning(true);
+        scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
+
+        Direction facing = getBlockState().getValue(StationaryRadarBlock.FACING);
         Vec3 facingVec = new Vec3(facing.getStepX(), facing.getStepY(), facing.getStepZ());
         Vec3 shipVec = PhysicsHandler.getWorldVecDirectionTransform(facingVec, this);
         double angle = Math.toDegrees(Math.atan2(shipVec.x, shipVec.z));

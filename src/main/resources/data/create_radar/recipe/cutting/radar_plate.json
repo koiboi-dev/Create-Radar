@@ -1,0 +1,14 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "I": { "tag": "c:plates/iron" }
+  },
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "result": { "id": "create_radar:radar_plate_block" },
+  "show_notification": true
+}

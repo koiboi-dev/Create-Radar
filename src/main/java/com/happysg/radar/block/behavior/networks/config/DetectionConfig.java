@@ -6,6 +6,7 @@ import com.happysg.radar.compat.Mods;
 import com.happysg.radar.config.RadarConfig;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 
 import java.util.List;
@@ -41,18 +42,24 @@ public record DetectionConfig(boolean player, boolean sable, boolean contraption
     }
 
     public static DetectionConfig fromTag(CompoundTag tag) {
-        boolean player = tag.getBoolean("player");
-        boolean sable = tag.getBoolean("sable");
-        boolean contraption = tag.getBoolean("contraption");
-        boolean mob = tag.getBoolean("mob");
-        boolean projectile = tag.getBoolean("projectile");
-        boolean animal = tag.getBoolean("animal");
-        boolean item = tag.getBoolean("item");
+        boolean player = getBooleanOrDefault(tag, "player", DEFAULT.player());
+        boolean sable = tag.contains("sable", Tag.TAG_BYTE)
+                ? tag.getBoolean("sable")
+                : getBooleanOrDefault(tag, "vs2", DEFAULT.sable());
+        boolean contraption = getBooleanOrDefault(tag, "contraption", DEFAULT.contraption());
+        boolean mob = getBooleanOrDefault(tag, "mob", DEFAULT.mob());
+        boolean projectile = getBooleanOrDefault(tag, "projectile", DEFAULT.projectile());
+        boolean animal = getBooleanOrDefault(tag, "animal", DEFAULT.animal());
+        boolean item = getBooleanOrDefault(tag, "item", DEFAULT.item());
         List<String> blacklistPlayers = tag.getCompound("playerList").getAllKeys().stream().filter(key -> !tag.getCompound("playerList").getBoolean(key)).toList();
         List<String> whitelistPlayers = tag.getCompound("playerList").getAllKeys().stream().filter(key -> tag.getCompound("playerList").getBoolean(key)).toList();
         List<String> blacklistSable = tag.getCompound("sableShips").getAllKeys().stream().filter(key -> !tag.getCompound("sableShips").getBoolean(key)).toList();
         List<String> whitelistSable = tag.getCompound("sableShips").getAllKeys().stream().filter(key -> tag.getCompound("sableShips").getBoolean(key)).toList();
         return new DetectionConfig(player, sable, contraption, mob, projectile, animal, item, blacklistPlayers, whitelistPlayers, blacklistSable, whitelistSable);
+    }
+
+    private static boolean getBooleanOrDefault(CompoundTag tag, String key, boolean defaultValue) {
+        return tag.contains(key, Tag.TAG_BYTE) ? tag.getBoolean(key) : defaultValue;
     }
 
     public boolean test(RadarTrack track) {

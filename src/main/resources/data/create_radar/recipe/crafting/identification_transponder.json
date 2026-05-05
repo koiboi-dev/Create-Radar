@@ -1,0 +1,16 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": { "item": "create:brass_casing" },
+    "E": { "item": "create:electron_tube" },
+    "R": { "item": "create:redstone_link" }
+  },
+  "pattern": [
+    " E ",
+    "RBR",
+    " E "
+  ],
+  "result": { "id": "create_radar:identification_transponder" },
+  "show_notification": true
+}

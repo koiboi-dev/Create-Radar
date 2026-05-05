@@ -79,6 +79,7 @@ public record BoolListPacket(boolean mainHand, boolean[] flags, String key) impl
             if ("detectBools".equals(packet.key)) {
                 CompoundTag det = new CompoundTag();
                 det.putBoolean("player", packet.flags[0]);
+                det.putBoolean("sable", packet.flags[1]);
                 det.putBoolean("vs2", packet.flags[1]);
                 det.putBoolean("contraption", packet.flags[2]);
                 det.putBoolean("mob", packet.flags[3]);

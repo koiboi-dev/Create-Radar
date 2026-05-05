@@ -1,0 +1,18 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": { "item": "create:brass_casing" },
+    "D": { "item": "create_radar:radar_filter_item" },
+    "I": { "item": "create_radar:ident_filter_item" },
+    "P": { "item": "create:precision_mechanism" },
+    "T": { "item": "create_radar:target_filter_item" }
+  },
+  "pattern": [
+    "DTI",
+    " P ",
+    " B "
+  ],
+  "result": { "id": "create_radar:network_filterer" },
+  "show_notification": true
+}

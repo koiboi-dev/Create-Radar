@@ -1,0 +1,16 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": { "item": "create:brass_casing" },
+    "D": { "item": "create_radar:radar_dish_block" },
+    "R": { "item": "create_radar:radar_receiver_block" }
+  },
+  "pattern": [
+    " D ",
+    "DRD",
+    " B "
+  ],
+  "result": { "id": "create_radar:plane_radar" },
+  "show_notification": true
+}

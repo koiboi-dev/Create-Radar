@@ -13,23 +13,25 @@ import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 public class RadarFilterScreen extends AbstractSimiScreen {
 
     private static final String KEY = "detectBools";
     private static final int COUNT = 7; // set to number of booleans you use
 
-    boolean player;
-    boolean vs2;
-    boolean contraption;
-    boolean mob;
-    boolean projectile;
-    boolean animal;
-    boolean item;
+    boolean player = true;
+    boolean vs2 = true;
+    boolean contraption = true;
+    boolean mob = true;
+    boolean projectile = true;
+    boolean animal = true;
+    boolean item = true;
 
     protected IconButton playerButton;
     protected Indicator playerIndicator;
@@ -171,6 +173,9 @@ public class RadarFilterScreen extends AbstractSimiScreen {
         if (!stack.isEmpty()) {
             boolean[] arr = BoolNBThelper.loadBooleansFromBytes(stack, KEY, COUNT);
             if (arr.length >= COUNT) {
+                if (!stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().contains(KEY)) {
+                    return;
+                }
                 player = arr[0];
                 vs2 = arr[1];
                 contraption = arr[2];

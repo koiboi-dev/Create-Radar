@@ -1,0 +1,16 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "R": { "item": "minecraft:lightning_rod" },
+    "I": { "item": "create:industrial_iron_block" },
+    "E": { "item": "create:electron_tube" }
+  },
+  "pattern": [
+    "R",
+    "I",
+    "E"
+  ],
+  "result": { "id": "create_radar:radar_receiver_block" },
+  "show_notification": true
+}

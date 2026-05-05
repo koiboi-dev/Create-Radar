@@ -8,6 +8,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -19,7 +20,7 @@ public class RadarTrackUtil {
 
     public static RadarTrack getRadarTrack(SubLevelAccess subLevel, Level level) {
         return new RadarTrack(String.valueOf(subLevel.getUniqueId()), getPosition(subLevel), getVelocity(subLevel, level), level.getGameTime(),
-                TrackCategory.SABLE, "Sable:subLevel", getShipSize(subLevel));
+                TrackCategory.SABLE, "Sable:ship", getShipSize(subLevel));
     }
 
     public static float getShipSize(SubLevelAccess subLevel){
@@ -29,16 +30,26 @@ public class RadarTrackUtil {
             return 1;
         }
     }
+
+
     public static Vec3 getVelocity(SubLevelAccess subLevel, Level level) {
-        //Probally not the best to cast like this.
-        Vector3f vec3d = new Vector3f((Vector3fc) SableCompanion.INSTANCE.getVelocity(level, subLevel.boundingBox().center()));
-        return new Vec3(vec3d);
+        Object velocity = SableCompanion.INSTANCE.getVelocity(level, subLevel.boundingBox().center());
+
+        if (velocity instanceof Vector3dc vec)
+            return new Vec3(vec.x(), vec.y(), vec.z());
+
+        if (velocity instanceof Vector3fc vec)
+            return new Vec3(vec.x(), vec.y(), vec.z());
+
+        return Vec3.ZERO;
     }
 
     public static Vec3 getPosition(SubLevelAccess serverShip) {
         Vector3d vecD = serverShip.boundingBox().center(new Vector3d());
         return new Vec3(vecD.x, vecD.y, vecD.z);
     }
+
+
 
 
     public static CompoundTag serializeNBTList(Collection<RadarTrack> tracks) {

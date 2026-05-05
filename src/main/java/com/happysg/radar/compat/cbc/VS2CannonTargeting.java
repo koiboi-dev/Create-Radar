@@ -20,11 +20,16 @@ public class VS2CannonTargeting {
         Vec3 diff = targetPos.subtract(mountPos);
         double horizontal = Math.hypot(diff.x, diff.z);
         double pitch = Math.toDegrees(Math.atan2(diff.y, horizontal));
-        double yaw = Math.toDegrees(Math.atan2(diff.z, diff.x));
-        if (yaw < 0) {
-            yaw += 360.0;
-        }
+        double yaw = wrap360(Math.toDegrees(Math.atan2(diff.z, diff.x)) + 270.0);
         return List.of(List.of(pitch, yaw));
+    }
+
+    private static double wrap360(double deg) {
+        deg %= 360.0;
+        if (deg < 0) {
+            deg += 360.0;
+        }
+        return deg;
     }
 
     public static List<List<Double>> calculatePitchAndYawVS2(CannonMountBlockEntity mount, Vec3 targetPos, ServerLevel level) {
@@ -42,7 +47,9 @@ public class VS2CannonTargeting {
         Direction initialDirection = cannonContraption.initialOrientation();
 
         if (CannonUtil.isLaserCannon(cannonContraption)) {
-            return calculatePitchAndYawVS2(level, 10000.0, targetPos, mountPos, barrelLength, initialDirection, 0.0, 0.0);
+            SubLevelAccess ship = SableCompanion.INSTANCE.getContaining(level, mountPos);
+            Vec3 localTarget = ship == null ? targetPos : toShipPosition(ship, targetPos);
+            return directAimToTarget(mountPos, localTarget);
         }
 
         float chargePower = CannonUtil.getInitialVelocity(cannonContraption, level);
@@ -54,6 +61,11 @@ public class VS2CannonTargeting {
         }
 
         return calculatePitchAndYawVS2(level, chargePower, targetPos, mountPos, barrelLength, initialDirection, drag, gravity);
+    }
+
+    private static Vec3 toShipPosition(SubLevelAccess ship, Vec3 worldPos) {
+        Vector3d local = ship.logicalPose().transformPositionInverse(new Vector3d(worldPos.x, worldPos.y, worldPos.z));
+        return new Vec3(local.x(), local.y(), local.z());
     }
 
     public static List<List<Double>> calculatePitchAndYawVS2(Level level, double speed, Vec3 targetPos, Vec3 mountPos, int barrelLength, Direction initialDirection, double drag, double gravity) {

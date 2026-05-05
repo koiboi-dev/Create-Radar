@@ -15,7 +15,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.happysg.radar.block.behavior.networks.config.DetectionConfig;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -134,7 +133,7 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
 
 
     private void updateRadarTracks() {
-        scanPos = PhysicsHandler.getWorldPos(bearingEntity).getCenter();
+        scanPos = PhysicsHandler.getWorldVec(bearingEntity);
         Level level = blockEntity.getLevel();
         boolean isServer = level instanceof net.minecraft.server.level.ServerLevel;
         net.minecraft.server.level.ServerLevel sl = isServer ? (net.minecraft.server.level.ServerLevel) level : null;
@@ -198,18 +197,6 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
                 radarTracks.remove(entity.getUUID().toString());
         }
 
-        // sable ships
-        if (Mods.SABLE.isLoaded()) {
-            Level level = blockEntity.getLevel();
-            scannedShips.removeIf(ship -> {
-                var center = ship.boundingBox().center();
-                SubLevelAccess current = SableCompanion.INSTANCE.getContaining(level, new Vec3(center.x(), center.y(), center.z()));
-                boolean dead = current == null || !ship.getUniqueId().equals(current.getUniqueId());
-                if (dead) radarTracks.remove(ship.getUniqueId().toString());
-                return dead;
-            });
-        }
-
         // ttl expiration (works for everything: entities, ships, projectiles)
         List<String> toRemove = new ArrayList<>();
         assert blockEntity.getLevel() != null;
@@ -270,10 +257,10 @@ public class RadarScanningBlockBehavior extends BlockEntityBehaviour {
         scannedShips.remove(SableUtils.getShipManagingPos(blockEntity));
     }
     private AABB getRadarAABB() {
-        BlockPos radarPos = PhysicsHandler.getWorldPos(blockEntity);
-        double x = radarPos.getX() + 0.5;
-        double y = radarPos.getY() + 0.5;
-        double z = radarPos.getZ() + 0.5;
+        Vec3 radarPos = PhysicsHandler.getWorldVec(blockEntity);
+        double x = radarPos.x;
+        double y = radarPos.y;
+        double z = radarPos.z;
 
         double yScan = RadarConfig.server().radarYScanRange.get();
         Level level = blockEntity.getLevel();
