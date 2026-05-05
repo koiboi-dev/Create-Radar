@@ -51,7 +51,7 @@ public class StationaryRadarBlockEntity extends SmartBlockEntity implements IRad
         scanningBehavior.setRunning(true);
         scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
 
-        Direction facing = getBlockState().getValue(StationaryRadarBlock.FACING);
+        Direction facing = getScanFacing();
         Vec3 facingVec = new Vec3(facing.getStepX(), facing.getStepY(), facing.getStepZ());
         Vec3 shipVec = PhysicsHandler.getWorldVecDirectionTransform(facingVec, this);
         double angle = Math.toDegrees(Math.atan2(shipVec.x, shipVec.z));
@@ -64,7 +64,7 @@ public class StationaryRadarBlockEntity extends SmartBlockEntity implements IRad
         scanningBehavior = new RadarScanningBlockBehavior(this);
         scanningBehavior.setRunning(true);
         scanningBehavior.setRange(RadarConfig.server().planeRadarRange.get());
-        scanningBehavior.setAngle((getBlockState().getValue(StationaryRadarBlock.FACING).toYRot() + 360) % 360);
+        scanningBehavior.setAngle((getScanFacing().toYRot() + 360) % 360);
         scanningBehavior.setScanPos(PhysicsHandler.getWorldVec(this));
         scanningBehavior.setTrackExpiration(1);
         behaviours.add(scanningBehavior);
@@ -120,5 +120,9 @@ public class StationaryRadarBlockEntity extends SmartBlockEntity implements IRad
     @Override
     public Direction getradarDirection() {
         return getBlockState().getValue(StationaryRadarBlock.FACING);
+    }
+
+    private Direction getScanFacing() {
+        return getBlockState().getValue(StationaryRadarBlock.FACING).getOpposite();
     }
 }
