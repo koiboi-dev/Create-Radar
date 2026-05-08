@@ -64,7 +64,7 @@ public class MonitorBlock extends HorizontalDirectionalBlock implements IBE<Moni
     @Override
     public void onRemove(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull BlockState pNewState, boolean pIsMoving) {
         MonitorMultiBlockHelper.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
-        if (pLevel instanceof ServerLevel sl) {
+        if (!pState.is(pNewState.getBlock()) && pLevel instanceof ServerLevel sl) {
             NetworkData.get(sl).onEndpointRemoved(sl, pPos);
         }
         super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);

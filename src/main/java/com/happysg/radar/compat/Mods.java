@@ -24,6 +24,7 @@ public enum Mods {
     CREATEBIGCANNONS,
     CREATEENERGYCANNONS,
     SHUPAPIUM,
+    SIMULATED,
     KABOOM;
     private final String id;
 

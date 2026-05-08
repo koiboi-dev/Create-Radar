@@ -10,7 +10,7 @@ public class RadarServerConfig extends ConfigBase {
 
     public final ConfigInt radarLinkRange = i(128, 1, "radarLinkRange", "Maximum possible distance in blocks between radar links in blocks");
     public final ConfigInt monitorMaxSize = i(9, 1, "monitorMaxSize", "Maximum size of monitor MultiBlock");
-    public final ConfigFloat radarGuidanceTurnRate = f(.15f, 0f, 1f, "radarGuidanceTurnRate", "Turn rate of radar guidance for CBCMW Missiles");
+   // public final ConfigFloat radarGuidanceTurnRate = f(.15f, 0f, 1f, "radarGuidanceTurnRate", "Turn rate of radar guidance for CBCMW Missiles");
     public final ConfigInt leadFiringDelay = i(0,0,1000,"firingDelay", "The firing delay used in leading calculation. Higher values may prove useful in laggy environments");
     public final ConfigFloat controllerPhysbearingMaxSpeed = f(25,2,25,"controllerPhysbearingMaxSpeed", "Increases the max Rotational speed of phys bearings controlled by Pitch/Yaw controllers");
     public final ConfigInt binoRaycastRange = i(512,1,1000,"binocularRange", "The range at which the binocular can acquire a target");
@@ -25,7 +25,7 @@ public class RadarServerConfig extends ConfigBase {
     public final ConfigInt radarFOV = i(90, 1, 360, "radarFOV", "Field of view of a radar in degrees");
 
     public final ConfigGroup guidedFuzeConfig = group(3,"guidedFuzeConfig", "Configs for the guided fuze");
-    public final ConfigFloat guidedFuzeMaxSeekDegrees  = f(30.0f,1.0f,180f,"guidedFuzeMaxSeekDegrees","The size of the cone the guided fuze can track targets from. Values are in degrees and are bi-directional");
+    public final ConfigFloat guidedFuzeMaxSeekDegrees  = f(180f,1.0f,180f,"guidedFuzeMaxSeekDegrees","The size of the cone the guided fuze can track targets from. Values are in degrees and are bi-directional (180 = full circle)");
     public final ConfigFloat guidedFuzeMaxDegreesPerTick = f(3,1,"guidedFuzeMaxDegreesPerTick", "The maximum number of degrees per tick the guided fuze can correct its course");
     public final ConfigBool guidedFuzeSeekBeforeApex = b(false,"guidedFuzeSeekBeforeApex","Determines if the guided fuze can seek its target before it has began to fall");
 }

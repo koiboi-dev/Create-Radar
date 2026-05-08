@@ -5,6 +5,12 @@ import com.happysg.radar.mixin.AbstractCannonAccessor;
 import com.happysg.radar.mixin.AutoCannonAccessor;
 import com.happysg.radar.mixin.AutocannonProjectileAccessor;
 import com.mojang.logging.LogUtils;
+import com.dsvv.cbcat.cannon.heavy_autocannon.HeavyAutocannonBlock;
+import com.dsvv.cbcat.cannon.heavy_autocannon.IHeavyAutocannonBlockEntity;
+import com.dsvv.cbcat.cannon.heavy_autocannon.contraption.MountedHeavyAutocannonContraption;
+import com.dsvv.cbcat.cannon.twin_autocannon.ITwinAutocannonBlockEntity;
+import com.dsvv.cbcat.cannon.twin_autocannon.TwinAutocannonBlock;
+import com.dsvv.cbcat.cannon.twin_autocannon.contraption.MountedTwinAutocannonContraption;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import net.arsenalists.createenergycannons.content.cannons.magnetic.railgun.MountedEnergyCannonContraption;
 import net.minecraft.core.BlockPos;
@@ -51,11 +57,11 @@ public class CannonUtil {
     private static final BallisticPropertiesComponent AC_FALLBACK = new BallisticPropertiesComponent(-0.025, 0.01, false, 0, 0, 0, 0);
 
     public static boolean isAutocannonFamily(AbstractMountedCannonContraption cannon) {
-        return isAutoCannon(cannon);
+        return isAutoCannon(cannon)
+                || isTwinAutocannon(cannon)
+                || isHeavyAutocannon(cannon);
 //                || isRotaryCannon(cannon)
-//                || isMediumCannon(cannon)
-//                || isTwinAutocannon(cannon)
-//                || isHeavyAutocannon(cannon);
+//                || isMediumCannon(cannon);
     }
 
     public static int getBarrelLength(AbstractMountedCannonContraption cannon) {
@@ -210,7 +216,7 @@ public class CannonUtil {
         if (isBigCannon(cannon)) {
             LOGGER.debug("   • BigCannon speed = {}", getBigCannonSpeed(level,cannon, (PitchOrientedContraptionEntity)cannon.entity));
             return getBigCannonSpeed(level, cannon ,(PitchOrientedContraptionEntity)cannon.entity);
-        } else if (isAutoCannon(cannon)) {
+        } else if (isAutocannonFamily(cannon)) {
             LOGGER.debug("   • AutoCannon speed = {}", getAutoCannonSpeed(cannon));
             return getAutoCannonSpeed(cannon);
         }
@@ -222,13 +228,13 @@ public class CannonUtil {
 //            LOGGER.debug("   • MediumCannon speed = {}", getMediumCannonSpeed(cannon));
 //            return getMediumCannonSpeed(cannon);
 //        }
-//        else if(isTwinAutocannon(cannon)){
-//            LOGGER.debug("   • TwinACannon speed = {}", getAutoCannonSpeed(cannon));
-//            return getAutoCannonSpeed(cannon);
-//        } else if(isHeavyAutocannon(cannon)){
-//            LOGGER.debug("   • HeavyACannon speed = {}", getAutoCannonSpeed(cannon));
-//            return getAutoCannonSpeed(cannon);
-//        }
+        else if(isTwinAutocannon(cannon)){
+            LOGGER.debug("   • TwinACannon speed = {}", getAutoCannonSpeed(cannon));
+            return getAutoCannonSpeed(cannon);
+        } else if(isHeavyAutocannon(cannon)){
+            LOGGER.debug("   • HeavyACannon speed = {}", getAutoCannonSpeed(cannon));
+            return getAutoCannonSpeed(cannon);
+        }
         LOGGER.debug("   • No known cannon type → returning 0");
         return 0;
     }
@@ -236,13 +242,12 @@ public class CannonUtil {
     public static int getAutocannonLifetimeTicks(AbstractMountedCannonContraption cannon) {
         if (cannon == null) return 100;
 
-        // Only CBC autocannon contraptions have this accessor reliably
-        if (!(isAutoCannon(cannon) )) {
+        if (!(isAutocannonFamily(cannon) )) {
             return 100;
         }
 
         try {
-            AutocannonMaterial mat = ((AutoCannonAccessor) cannon).getMaterial();
+            AutocannonMaterial mat = getAutocannonMaterial(cannon);
             if (mat != null) {
                 int t = mat.properties().projectileLifetime();
                 if (t > 0) return t;
@@ -346,15 +351,15 @@ public class CannonUtil {
         return drag;
     }
 
-//    public static boolean isHeavyAutocannon(AbstractMountedCannonContraption cannon) {
-//        if(!Mods.CBC_AT.isLoaded()) return false;
-//        return cannon instanceof MountedHeavyAutocannonContraption;
-//    }
-//
-//    public static boolean isTwinAutocannon(AbstractMountedCannonContraption cannon) {
-//        if(!Mods.CBC_AT.isLoaded()) return false;
-//        return cannon instanceof MountedTwinAutocannonContraption;
-//    }
+    public static boolean isHeavyAutocannon(AbstractMountedCannonContraption cannon) {
+        if(!Mods.CBC_AT.isLoaded()) return false;
+        return cannon instanceof MountedHeavyAutocannonContraption;
+    }
+
+    public static boolean isTwinAutocannon(AbstractMountedCannonContraption cannon) {
+        if(!Mods.CBC_AT.isLoaded()) return false;
+        return cannon instanceof MountedTwinAutocannonContraption;
+    }
 
     public static boolean isBigCannon(AbstractMountedCannonContraption cannon) {
         return cannon instanceof MountedBigCannonContraption;
@@ -395,12 +400,14 @@ public class CannonUtil {
     }
 
     private static float getAutoCannonSpeed(AbstractMountedCannonContraption cannon) {
-        AutocannonMaterial cann = ((AutoCannonAccessor) cannon).getMaterial();
+        AutocannonMaterial cann = getAutocannonMaterial(cannon);
         if (cann == null) return 0f;
         var props = cann.properties();
 
         Predicate<BlockEntity> isBarrel =
-                e -> e instanceof IAutocannonBlockEntity;
+                e -> e instanceof IAutocannonBlockEntity
+                        || e instanceof ITwinAutocannonBlockEntity
+                        || e instanceof IHeavyAutocannonBlockEntity;
 
         float speed = props.baseSpeed();
         BlockPos pos = cannon.getStartPos().relative(cannon.initialOrientation());
@@ -418,6 +425,34 @@ public class CannonUtil {
         }
 
         return speed;
+    }
+
+    @Nullable
+    private static AutocannonMaterial getAutocannonMaterial(AbstractMountedCannonContraption cannon) {
+        if (cannon == null) return null;
+
+        if (isAutoCannon(cannon)) {
+            try {
+                return ((AutoCannonAccessor) cannon).getMaterial();
+            } catch (Throwable ignored) {
+                LOGGER.debug("Mixin maybe didnt apply?");
+                return null;
+            }
+        }
+
+        if (!Mods.CBC_AT.isLoaded()) return null;
+
+        for (BlockEntity blockEntity : cannon.presentBlockEntities.values()) {
+            Block block = blockEntity.getBlockState().getBlock();
+            if (block instanceof TwinAutocannonBlock twinAutocannonBlock) {
+                return twinAutocannonBlock.getAutocannonMaterial();
+            }
+            if (block instanceof HeavyAutocannonBlock heavyAutocannonBlock) {
+                return heavyAutocannonBlock.getAutocannonMaterial();
+            }
+        }
+
+        return null;
     }
 
 

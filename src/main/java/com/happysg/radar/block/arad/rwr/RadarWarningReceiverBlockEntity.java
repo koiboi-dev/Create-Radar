@@ -68,7 +68,7 @@ public class RadarWarningReceiverBlockEntity extends SmartBlockEntity {
         UUID key = ship.getUniqueId();
         if(!Mods.SABLE.isLoaded()) return;
         boolean locked = RadarContactRegistry.isLocked(sl, key);
-        if (locked) LogUtils.getLogger().warn("locked");
+        //if (locked) LogUtils.getLogger().warn("locked");
         boolean inRange = RadarContactRegistry.isInRange(sl, key);
         // locked always wins and completely ignores the in-range sound
         if (locked) {

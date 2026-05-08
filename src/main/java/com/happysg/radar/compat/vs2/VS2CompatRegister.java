@@ -5,12 +5,12 @@ import com.happysg.radar.block.arad.rwr.RadarWarningReceiverBlockEntity;
 import com.happysg.radar.block.controller.id.IdentificationTransponder;
 import com.happysg.radar.block.radar.plane.StationaryRadarBlock;
 import com.happysg.radar.block.radar.plane.StationaryRadarBlockEntity;
-import com.happysg.radar.registry.ModBlocks;
 import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import static com.happysg.radar.CreateRadar.REGISTRATE;
@@ -58,7 +58,18 @@ public class VS2CompatRegister {
                         .properties(BlockBehaviour.Properties::noOcclusion)
                         .properties(p -> p.strength(0.5f))
                         .transform(axeOrPickaxe())
-                        .simpleItem()
+                        .blockstate((c, p) -> p.getVariantBuilder(c.get())
+                                .partialState().with(RadarWarningReceiverBlock.ON_SHIP, false)
+                                .modelForState()
+                                .modelFile(p.models().getExistingFile(ResourceLocation.fromNamespaceAndPath("create_radar", "block/radar_warning_receiver_off")))
+                                .addModel()
+                                .partialState().with(RadarWarningReceiverBlock.ON_SHIP, true)
+                                .modelForState()
+                                .modelFile(p.models().getExistingFile(ResourceLocation.fromNamespaceAndPath("create_radar", "block/radar_warning_receiver_on")))
+                                .addModel())
+                        .item()
+                        .model((c, p) -> p.withExistingParent(c.getName(), ResourceLocation.fromNamespaceAndPath("create_radar", "block/radar_warning_receiver_off")))
+                        .build()
                         .register();
         RWR_BE = REGISTRATE
                 .blockEntity("rwr_be", RadarWarningReceiverBlockEntity::new)

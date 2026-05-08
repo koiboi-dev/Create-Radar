@@ -53,3 +53,10 @@ type = "optional"
 versionRange = "[1.0,2.0)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.create_radar]]
+modId = "computercraft"
+type = "optional"
+versionRange = "[1.113.0,2.0)"
+ordering = "AFTER"
+side = "BOTH"
